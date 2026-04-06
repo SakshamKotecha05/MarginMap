@@ -103,3 +103,48 @@ export const anomalies = {
   declineMislabeled:    allSKUs.filter((s) => s.lifecycle_stage === "Decline" && s.margin_pct > 35),
   earlyDeathSignals:    allSKUs.filter((s) => s.lifecycle_stage === "Launch" && s.monthly_profit < 0),
 };
+
+// Deadstock risk: trapped cash — high days of inventory + low sales velocity
+export const deadstockRisk = allSKUs
+  .filter((s) => s.days_of_inventory > 90 && s.monthly_units < 100)
+  .sort((a, b) => b.days_of_inventory - a.days_of_inventory);
+
+// Pearson correlation: avg_rating vs monthly_profit
+// Verifies the r ≈ 0.010 finding — rating is not a proxy for profitability
+export const ratingProfitCorrelation = (() => {
+  const n = allSKUs.length;
+  const xMean = allSKUs.reduce((s, d) => s + d.avg_rating, 0) / n;
+  const yMean = allSKUs.reduce((s, d) => s + d.monthly_profit, 0) / n;
+  const num   = allSKUs.reduce((s, d) => s + (d.avg_rating - xMean) * (d.monthly_profit - yMean), 0);
+  const den   = Math.sqrt(
+    allSKUs.reduce((s, d) => s + (d.avg_rating - xMean) ** 2, 0) *
+    allSKUs.reduce((s, d) => s + (d.monthly_profit - yMean) ** 2, 0)
+  );
+  return den === 0 ? 0 : Math.round((num / den) * 1000) / 1000;
+})();
+
+// Return rate vs rating anomalies — surprising combinations
+export const returnRatingAnomalies = {
+  // Customers love it but return it anyway (possibly sizing/fit issues)
+  highReturnGoodRating: allSKUs.filter((s) => s.return_rate_pct > 20 && s.avg_rating >= 4.0),
+  // Customers dislike it but rarely return it (possibly consumables)
+  lowReturnBadRating:   allSKUs.filter((s) => s.return_rate_pct < 5  && s.avg_rating < 2.5),
+};
+
+// Channel cost breakdown (avg % of selling price) for waterfall chart
+// Platform fee is the root cause of marketplace vs D2C margin gap
+const CHANNEL_ORDER = ["D2C Website", "Nykaa", "BigBasket", "Amazon", "Flipkart"];
+export const channelCostBreakdown = CHANNEL_ORDER.map((ch) => {
+  const items = groupBy(allSKUs, "channel")[ch] ?? [];
+  const n = items.length || 1;
+  const avg = (fn: (s: typeof items[0]) => number) =>
+    Math.round((items.reduce((s, d) => s + fn(d), 0) / n) * 10) / 10;
+  return {
+    channel:      ch === "D2C Website" ? "D2C" : ch,
+    cogsPct:      avg((d) => (d.cogs / d.selling_price) * 100),
+    marketingPct: avg((d) => (d.marketing_cost_per_unit / d.selling_price) * 100),
+    logisticsPct: avg((d) => (d.logistics_cost_per_unit / d.selling_price) * 100),
+    platformPct:  avg((d) => (d.platform_fee / d.selling_price) * 100),
+    marginPct:    avg((d) => d.margin_pct),
+  };
+});
