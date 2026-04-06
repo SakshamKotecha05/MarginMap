@@ -41,6 +41,22 @@ export default function ZombiesPage() {
   const monthlySavings = Math.abs(selectedItems.reduce((sum, s) => sum + Math.min(s.monthly_profit, 0), 0));
   const annualSavings  = monthlySavings * 12;
 
+  const downloadCSV = () => {
+    const header = ["SKU ID","Brand","Category","Sub-Category","Channel","Lifecycle","Margin %","Units/Mo","Monthly Revenue","Monthly Loss","Zombie Score"];
+    const rows = filtered.map((s) => [
+      s.sku_id, s.brand, s.category, s.sub_category, s.channel, s.lifecycle_stage,
+      s.margin_pct.toFixed(2), s.monthly_units,
+      s.monthly_revenue.toFixed(2),
+      s.monthly_profit < 0 ? s.monthly_profit.toFixed(2) : "0",
+      s.zombie_score,
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "zombie-kill-list.csv";
+    a.click();
+  };
+
   return (
     <div className="px-4 py-6 lg:px-8 pb-32 space-y-5 max-w-[1400px]">
       {/* Header */}
@@ -89,6 +105,13 @@ export default function ZombiesPage() {
           {channels.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <span className="text-[11px] text-slate-400 font-medium ml-1">{filtered.length} shown</span>
+        <button
+          onClick={downloadCSV}
+          className="ml-auto text-xs font-medium border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-1.5"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+          Export CSV
+        </button>
       </div>
 
       {/* Table */}
@@ -128,8 +151,8 @@ export default function ZombiesPage() {
                     <input
                       type="checkbox"
                       checked={selected.has(s.sku_id)}
-                      onChange={() => toggle(s.sku_id)}
-                      className="rounded border-slate-300 text-blue-500 focus:ring-blue-500/30"
+                      onChange={() => {}}
+                      className="rounded border-slate-300 text-blue-500 focus:ring-blue-500/30 pointer-events-none"
                     />
                   </td>
                   <td className="px-3 py-2.5 font-semibold text-slate-800">{s.sku_id}</td>
