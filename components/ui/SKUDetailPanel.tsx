@@ -49,10 +49,10 @@ export default function SKUDetailPanel({ sku, onClose }: Props) {
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[200]" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 h-full w-[340px] bg-white shadow-2xl z-50 overflow-y-auto animate-slide-in">
+      <div className="fixed right-0 top-0 h-full w-[340px] bg-white shadow-2xl z-[201] overflow-y-auto panel-slide-in">
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-lg border-b border-gray-100 px-5 py-4 z-10">
           <div className="flex items-start justify-between gap-3">
@@ -118,15 +118,6 @@ export default function SKUDetailPanel({ sku, onClose }: Props) {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-        .animate-slide-in {
-          animation: slideIn 0.25s ease-out;
-        }
-      `}</style>
     </>
   );
 }
