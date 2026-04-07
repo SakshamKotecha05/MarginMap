@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MarginMap: Product Portfolio Intelligence
 
-## Getting Started
+**Mosaic Wellness Fellowship Builder Challenge: Problem #3**
 
-First, run the development server:
+A fast, static dashboard that analyzes 600 SKUs across 5 channels to surface zombie products losing money, hidden gems that deserve more investment, and gateway products that look unprofitable but anchor subscription revenue.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Numerical Answer: ₹15,892,978.83/month in avoidable losses**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Live Demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**https://margin-map-tau.vercel.app**
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## What It Does
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Page | Purpose |
+|---|---|
+| **Executive Summary** | Full portfolio story at a glance: KPIs, brand breakdown, channel comparison |
+| **Portfolio Quadrant** | Scatter of all 600 SKUs by margin % vs monthly units: click any dot for detail |
+| **Zombie Kill List** | 188 loss-making SKUs with what-if P&L simulator: select rows to calculate savings |
+| **Hidden Gems** | 50 underinvested SKUs ranked by gem score: revenue upside if scaled |
+| **Insights** | 7 deep-discovery tabs: arbitrage, cost waterfall, anomalies, brand/category, gateways, Pareto, inventory risk |
+| **Explorer** | Full 600-SKU searchable, filterable, sortable table |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Key Findings
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **188 zombie SKUs** losing ₹1.59 Cr/month (₹19.07 Cr/year): 31% of portfolio
+- **Platform fees (15–16%)** are the root cause of marketplace losses, not COGS
+- **75 products** are profitable on one channel but losing on another: delist, don't kill
+- **Rating and profit are essentially uncorrelated** (r = 0.010): a product can have 4.5 stars and negative margins
+- **Top 20% of SKUs** generate 50.2% of revenue: concentration risk is real
+- **18 gateway products** look like zombies but have >50% repeat purchase rates: killing them collapses LTV
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Classification Logic
+
+### Step 1: Gateway Check (runs first, overrides all)
+`repeat_purchase_rate_pct > 50%` → classify as **gateway** (exempt from zombie rules)
+
+### Step 2: Hard Zombie Rule
+`margin_pct < 0 AND not gateway` → **zombie**
+
+### Step 3: Zombie Score (percentile-weighted, 0–100)
+Monthly profit (25%), units (20%), rating (15%), return rate (15%), repeat rate (15%), inventory days (10%)
+Threshold: score < 25 → zombie candidate
+
+### Step 4: Gem Score (percentile-weighted, 0–100)
+Margin % (25%), repeat rate (25%), rating (20%), units inverted (20%), marketing cost inverted (10%)
+Threshold: score > 65 AND not zombie → hidden gem
+
+---
+
+## Tech Stack
+
+- **Next.js 16** (App Router, `output: 'export'`: fully static)
+- **Tailwind CSS v4**
+- **Recharts**: `isAnimationActive={false}` on all large datasets, `useMemo` on all filters
+- **Data:** 600 SKUs pre-bundled as static JSON: zero runtime API calls
+
