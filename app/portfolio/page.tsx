@@ -64,7 +64,7 @@ export default function PortfolioPage() {
   );
 
   return (
-    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px]">
+    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="gradient-mesh rounded-2xl px-6 py-5 -mx-1">
         <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Portfolio Quadrant</h1>

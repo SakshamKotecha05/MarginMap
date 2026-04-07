@@ -209,22 +209,31 @@ function ArbitrageTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-blue-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Mixed Products</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-blue-600">{mixedChannelProducts.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">profitable on one variant, losing on another</p>
+        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Mixed Products</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{mixedChannelProducts.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">profitable on one variant, losing on another</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Pack-Size Bleeding</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-500">{packSizeCases.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">same channel, different price point — small pack losing</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Pack-Size Bleeding</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{packSizeCases.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">same channel, different price point — small pack losing</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-emerald-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Max Margin Spread</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-emerald-600">
+        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Max Margin Spread</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
             {formatPercent(mixedChannelProducts[0]?.spread ?? 0)}pp
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">best vs worst variant in same product family</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">best vs worst variant in same product family</p>
+          </div>
         </div>
       </div>
 
@@ -484,17 +493,23 @@ function AnomaliesTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
     <div className="space-y-5">
       {/* Correlation callout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-blue-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Rating–Profit Correlation</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-blue-600">r = {ratingProfitCorrelation.toFixed(3)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">near-zero — rating is not a proxy for profitability</p>
+        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Rating–Profit Correlation</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">r = {ratingProfitCorrelation.toFixed(3)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">near-zero — rating is not a proxy for profitability</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Return–Rating Surprises</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Return–Rating Surprises</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
             {returnRatingAnomalies.highReturnGoodRating.length} SKUs
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">high return rate (&gt;20%) despite great rating (≥4.0★)</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">high return rate (&gt;20%) despite great rating (≥4.0★)</p>
+          </div>
         </div>
       </div>
 
@@ -714,22 +729,31 @@ function GatewayTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Gateway SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">{gateways.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">protected from zombie classification</p>
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Gateway SKUs</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{gateways.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">protected from zombie classification</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-400 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Repeat Rate Threshold</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">&gt; 50%</p>
-          <p className="text-[11px] text-slate-400 mt-1">repeat purchase rate triggers exemption</p>
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Repeat Rate Threshold</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">&gt; 50%</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">repeat purchase rate triggers exemption</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-300 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Avg Repeat Rate</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Avg Repeat Rate</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
             {formatPercent(gateways.reduce((s, g) => s + g.repeat_purchase_rate_pct, 0) / gateways.length)}
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">customers come back compulsively</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">customers come back compulsively</p>
+          </div>
         </div>
       </div>
 
@@ -800,20 +824,29 @@ function ParetoTab() {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-blue-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Top 20% SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-blue-600">{TOP20_RANK} SKUs</p>
-          <p className="text-[11px] text-slate-400 mt-1">drive {TOP20_PCT}% of total revenue</p>
+        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Top 20% SKUs</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{TOP20_RANK} SKUs</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">drive {TOP20_PCT}% of total revenue</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Bottom 50% SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-500">300 SKUs</p>
-          <p className="text-[11px] text-slate-400 mt-1">generate only {bot50Pct.toFixed(1)}% of revenue</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Bottom 50% SKUs</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">300 SKUs</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">generate only {bot50Pct.toFixed(1)}% of revenue</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Concentration Risk</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">High</p>
-          <p className="text-[11px] text-slate-400 mt-1">losing any top SKU has outsized P&amp;L impact</p>
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Concentration Risk</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">High</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">losing any top SKU has outsized P&amp;L impact</p>
+          </div>
         </div>
       </div>
 
@@ -921,22 +954,31 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Deadstock SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-500">{deadstockRisk.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">&gt;90 days inventory, &lt;100 units/month</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Deadstock SKUs</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{deadstockRisk.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">&gt;90 days inventory, &lt;100 units/month</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-400 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Trapped Cash (est.)</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-500">{formatCurrency(trappedCash)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">COGS sitting in slow-moving inventory</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Trapped Cash (est.)</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(trappedCash)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">COGS sitting in slow-moving inventory</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-amber-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Max Days of Stock</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-amber-600">
+        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Max Days of Stock</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
             {deadstockRisk[0]?.days_of_inventory ?? 0}d
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">worst-case inventory overhang</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">worst-case inventory overhang</p>
+          </div>
         </div>
       </div>
 
@@ -1010,7 +1052,7 @@ export default function InsightsPage() {
   const [detailSKU, setDetailSKU] = useState<ClassifiedSKU | null>(null);
 
   return (
-    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px]">
+    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="gradient-mesh rounded-2xl px-6 py-5 -mx-1">
         <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Deep Insights</h1>

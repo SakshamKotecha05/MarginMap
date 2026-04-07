@@ -58,7 +58,7 @@ export default function ZombiesPage() {
   };
 
   return (
-    <div className="px-4 py-6 lg:px-8 pb-32 space-y-5 max-w-[1400px]">
+    <div className="px-4 py-6 lg:px-8 pb-32 space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="gradient-mesh rounded-2xl px-6 py-5 -mx-1">
         <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Zombie Products — Kill List</h1>
@@ -69,20 +69,29 @@ export default function ZombiesPage() {
 
       {/* Summary stats */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Zombie SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-600">{zombies.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">of 600 total products</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Zombie SKUs</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{zombies.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">of 600 total products</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-400 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Monthly Losses</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-600">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)))}</p>
-          <p className="text-[11px] text-slate-400 mt-1">from negative-profit SKUs</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Monthly Losses</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)))}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">from negative-profit SKUs</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-red-300 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Annual Losses</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-red-600">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)) * 12)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">projected at current rate</p>
+        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Annual Losses</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)) * 12)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">projected at current rate</p>
+          </div>
         </div>
       </section>
 
@@ -177,7 +186,7 @@ export default function ZombiesPage() {
       </div>
 
       {/* What-If Simulator — sticky bar */}
-      <div className="fixed bottom-16 lg:bottom-0 left-0 lg:left-64 right-0 z-40">
+      <div className="fixed bottom-0 left-0 right-0 z-40">
         <div className="bg-slate-900/95 backdrop-blur-lg text-white px-5 lg:px-8 py-4 flex items-center justify-between gap-4 border-t border-slate-700/50">
           {selected.size === 0 ? (
             <div className="flex items-center gap-2">

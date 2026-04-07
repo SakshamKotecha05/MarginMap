@@ -49,7 +49,7 @@ export default function GemsPage() {
   const [detailSKU, setDetailSKU] = useState<ClassifiedSKU | null>(null);
 
   return (
-    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px]">
+    <div className="px-4 py-6 lg:px-8 space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="gradient-mesh rounded-2xl px-6 py-5 -mx-1">
         <div className="flex items-start justify-between gap-4">
@@ -71,20 +71,29 @@ export default function GemsPage() {
 
       {/* Summary cards */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-emerald-500 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Hidden Gems</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-emerald-600">{gems.length}</p>
-          <p className="text-[11px] text-slate-400 mt-1">underinvested SKUs</p>
+        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Hidden Gems</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{gems.length}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">underinvested SKUs</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-emerald-400 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Avg Gem Margin</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-emerald-600">{formatPercent(avgGemMargin)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">vs portfolio average</p>
+        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Avg Gem Margin</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatPercent(avgGemMargin)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">vs portfolio average</p>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5 border-l-4 border-l-emerald-300 card-hover">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Revenue Upside</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-emerald-600">{formatCurrency(potentialRevenue)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">if scaled to category median</p>
+        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
+          <p className="text-xs text-slate-400 mb-2">Revenue Upside</p>
+          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(potentialRevenue)}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+            <p className="text-[11px] text-slate-400">if scaled to category median</p>
+          </div>
         </div>
       </section>
 
