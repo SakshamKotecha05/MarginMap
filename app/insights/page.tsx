@@ -19,6 +19,7 @@ import {
   LineChart, Line, ReferenceLine, CartesianGrid,
 } from "recharts";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
+import KPICard from "@/components/ui/KPICard";
 import type { ClassifiedSKU } from "@/lib/classify";
 
 // ─── Static data (computed once, not in render) ────────────────────────────
@@ -209,32 +210,9 @@ function ArbitrageTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Mixed Products</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{mixedChannelProducts.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">profitable on one variant, losing on another</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Pack-Size Bleeding</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{packSizeCases.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">same channel, different price point — small pack losing</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Max Margin Spread</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
-            {formatPercent(mixedChannelProducts[0]?.spread ?? 0)}pp
-          </p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">best vs worst variant in same product family</p>
-          </div>
-        </div>
+        <KPICard title="Mixed Products"   value={String(mixedChannelProducts.length)}              subtitle="profitable on one variant, losing on another"    color="blue" />
+        <KPICard title="Pack-Size Bleeding" value={String(packSizeCases.length)}                   subtitle="same channel, different price point — small pack losing" color="red" />
+        <KPICard title="Max Margin Spread" value={`${formatPercent(mixedChannelProducts[0]?.spread ?? 0)}pp`} subtitle="best vs worst variant in same product family" color="green" />
       </div>
 
       <InsightBanner
@@ -493,24 +471,8 @@ function AnomaliesTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
     <div className="space-y-5">
       {/* Correlation callout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Rating–Profit Correlation</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">r = {ratingProfitCorrelation.toFixed(3)}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">near-zero — rating is not a proxy for profitability</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Return–Rating Surprises</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
-            {returnRatingAnomalies.highReturnGoodRating.length} SKUs
-          </p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">high return rate (&gt;20%) despite great rating (≥4.0★)</p>
-          </div>
-        </div>
+        <KPICard title="Rating–Profit Correlation" value={`r = ${ratingProfitCorrelation.toFixed(3)}`} subtitle="near-zero — rating is not a proxy for profitability" color="blue" />
+        <KPICard title="Return–Rating Surprises" value={`${returnRatingAnomalies.highReturnGoodRating.length} SKUs`} subtitle="high return rate (>20%) despite great rating (≥4.0★)" color="amber" />
       </div>
 
       <InsightBanner
@@ -729,32 +691,9 @@ function GatewayTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Gateway SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{gateways.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">protected from zombie classification</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Repeat Rate Threshold</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">&gt; 50%</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">repeat purchase rate triggers exemption</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Avg Repeat Rate</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
-            {formatPercent(gateways.reduce((s, g) => s + g.repeat_purchase_rate_pct, 0) / gateways.length)}
-          </p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">customers come back compulsively</p>
-          </div>
-        </div>
+        <KPICard title="Gateway SKUs"          value={String(gateways.length)}    subtitle="protected from zombie classification"     color="amber" />
+        <KPICard title="Repeat Rate Threshold" value="> 50%"                       subtitle="repeat purchase rate triggers exemption"  color="amber" />
+        <KPICard title="Avg Repeat Rate"       value={formatPercent(gateways.reduce((s, g) => s + g.repeat_purchase_rate_pct, 0) / gateways.length)} subtitle="customers come back compulsively" color="amber" />
       </div>
 
       <InsightBanner
@@ -824,30 +763,9 @@ function ParetoTab() {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Top 20% SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{TOP20_RANK} SKUs</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">drive {TOP20_PCT}% of total revenue</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Bottom 50% SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">300 SKUs</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">generate only {bot50Pct.toFixed(1)}% of revenue</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Concentration Risk</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">High</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">losing any top SKU has outsized P&amp;L impact</p>
-          </div>
-        </div>
+        <KPICard title="Top 20% SKUs"       value={`${TOP20_RANK} SKUs`}  subtitle={`drive ${TOP20_PCT}% of total revenue`}           color="blue" />
+        <KPICard title="Bottom 50% SKUs"    value="300 SKUs"              subtitle={`generate only ${bot50Pct.toFixed(1)}% of revenue`} color="red" />
+        <KPICard title="Concentration Risk" value="High"                  subtitle="losing any top SKU has outsized P&L impact"         color="amber" />
       </div>
 
       <InsightBanner
@@ -954,32 +872,9 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Deadstock SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{deadstockRisk.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">&gt;90 days inventory, &lt;100 units/month</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Trapped Cash (est.)</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(trappedCash)}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">COGS sitting in slow-moving inventory</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Max Days of Stock</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">
-            {deadstockRisk[0]?.days_of_inventory ?? 0}d
-          </p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">worst-case inventory overhang</p>
-          </div>
-        </div>
+        <KPICard title="Deadstock SKUs"    value={String(deadstockRisk.length)}                  subtitle=">90 days inventory, <100 units/month"   color="red" />
+        <KPICard title="Trapped Cash (est.)" value={formatCurrency(trappedCash)}                  subtitle="COGS sitting in slow-moving inventory"  color="red" />
+        <KPICard title="Max Days of Stock" value={`${deadstockRisk[0]?.days_of_inventory ?? 0}d`} subtitle="worst-case inventory overhang"           color="amber" />
       </div>
 
       <InsightBanner

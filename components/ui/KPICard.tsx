@@ -36,11 +36,11 @@ interface KPICardProps {
 
 export default function KPICard({ title, value, subtitle, color = "blue", icon }: KPICardProps) {
   return (
-    <div className={`${cardBgs[color]} rounded-2xl shadow-md p-6 card-hover`}>
-      <div className="flex items-start justify-between gap-3">
+    <div className={`${cardBgs[color]} rounded-2xl shadow-md p-4 sm:p-6 card-hover`}>
+      <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-slate-400 mb-2">{title}</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular leading-tight text-slate-900">{value}</p>
+          <p className="text-xs text-slate-400 mb-1.5 sm:mb-2">{title}</p>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold tabular leading-tight text-slate-900">{value}</p>
           {subtitle && (
             <div className="flex items-center gap-1.5 mt-2">
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dots[color]}`} />
@@ -49,7 +49,7 @@ export default function KPICard({ title, value, subtitle, color = "blue", icon }
           )}
         </div>
         {icon && (
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg ${iconBgs[color]}`}>
+          <div className={`hidden sm:flex w-10 h-10 rounded-xl items-center justify-center flex-shrink-0 text-lg ${iconBgs[color]}`}>
             {icon}
           </div>
         )}

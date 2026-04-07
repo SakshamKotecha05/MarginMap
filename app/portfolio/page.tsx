@@ -106,7 +106,8 @@ export default function PortfolioPage() {
 
       {/* Chart */}
       <div className="bg-white rounded-2xl shadow-sm p-5">
-        <ResponsiveContainer width="100%" height={480}>
+        <div className="h-[300px] sm:h-[480px]">
+          <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
             <XAxis
               type="number"
@@ -147,7 +148,8 @@ export default function PortfolioPage() {
               ))}
             </Scatter>
           </ScatterChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Quadrant labels */}

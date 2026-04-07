@@ -5,6 +5,7 @@ import { byCategory } from "@/lib/calculations";
 import type { ClassifiedSKU } from "@/lib/classify";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
+import KPICard from "@/components/ui/KPICard";
 
 const sorted = [...gems].sort((a, b) => b.gem_score - a.gem_score);
 
@@ -71,30 +72,9 @@ export default function GemsPage() {
 
       {/* Summary cards */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Hidden Gems</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{gems.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">underinvested SKUs</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Avg Gem Margin</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatPercent(avgGemMargin)}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">vs portfolio average</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Revenue Upside</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(potentialRevenue)}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">if scaled to category median</p>
-          </div>
-        </div>
+        <KPICard title="Hidden Gems"    value={String(gems.length)}          subtitle="underinvested SKUs"              color="green" />
+        <KPICard title="Avg Gem Margin" value={formatPercent(avgGemMargin)}   subtitle="vs portfolio average"            color="green" />
+        <KPICard title="Revenue Upside" value={formatCurrency(potentialRevenue)} subtitle="if scaled to category median"  color="green" />
       </section>
 
       {/* Insight banner */}
@@ -135,20 +115,20 @@ export default function GemsPage() {
                   <td className="px-3 py-2.5">
                     <span className="text-[10px] font-bold text-slate-300">#{i + 1}</span>
                   </td>
-                  <td className="px-3 py-2.5 font-semibold text-slate-800">{s.sku_id}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.brand}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.category}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.channel}</td>
-                  <td className="px-3 py-2.5 text-right tabular font-bold text-emerald-600">
+                  <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.category}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.channel}</td>
+                  <td className="px-3 py-2.5 text-right tabular font-bold text-emerald-600 whitespace-nowrap">
                     {formatPercent(s.margin_pct)}
                   </td>
-                  <td className="px-3 py-2.5 text-right">
+                  <td className="px-3 py-2.5 text-right whitespace-nowrap">
                     <StarRating rating={s.avg_rating} />
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular text-blue-600 font-semibold">
+                  <td className="px-3 py-2.5 text-right tabular text-blue-600 font-semibold whitespace-nowrap">
                     {formatPercent(s.repeat_purchase_rate_pct)}
                   </td>
-                  <td className="px-3 py-2.5 text-right tabular text-slate-500">
+                  <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">
                     {s.monthly_units.toLocaleString("en-IN")}
                   </td>
                   <td className="px-3 py-2.5 text-right">

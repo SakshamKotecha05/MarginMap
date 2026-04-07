@@ -4,8 +4,10 @@ import { zombies } from "@/lib/data";
 import type { ClassifiedSKU } from "@/lib/classify";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
+import KPICard from "@/components/ui/KPICard";
 
 const sorted = [...zombies].sort((a, b) => a.monthly_profit - b.monthly_profit);
+const zombieLoss = Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0));
 const brands   = [...new Set(zombies.map((s) => s.brand))];
 const channels = [...new Set(zombies.map((s) => s.channel))];
 
@@ -69,30 +71,9 @@ export default function ZombiesPage() {
 
       {/* Summary stats */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Zombie SKUs</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{zombies.length}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">of 600 total products</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Monthly Losses</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)))}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">from negative-profit SKUs</p>
-          </div>
-        </div>
-        <div className="bg-gradient-to-br from-red-100/65 to-white rounded-2xl shadow-md p-6 card-hover">
-          <p className="text-xs text-slate-400 mb-2">Annual Losses</p>
-          <p className="text-2xl lg:text-3xl font-bold tabular text-slate-900">{formatCurrency(Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0)) * 12)}</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
-            <p className="text-[11px] text-slate-400">projected at current rate</p>
-          </div>
-        </div>
+        <KPICard title="Zombie SKUs"    value={String(zombies.length)}       subtitle="of 600 total products"         color="red" />
+        <KPICard title="Monthly Losses" value={formatCurrency(zombieLoss)}    subtitle="from negative-profit SKUs"     color="red" />
+        <KPICard title="Annual Losses"  value={formatCurrency(zombieLoss*12)} subtitle="projected at current rate"     color="red" />
       </section>
 
       {/* Filters */}
@@ -164,13 +145,13 @@ export default function ZombiesPage() {
                       className="rounded border-slate-300 text-blue-500 focus:ring-blue-500/30 pointer-events-none"
                     />
                   </td>
-                  <td className="px-3 py-2.5 font-semibold text-slate-800">{s.sku_id}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.brand}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.category}</td>
-                  <td className="px-3 py-2.5 text-slate-500">{s.channel}</td>
-                  <td className="px-3 py-2.5 text-right tabular text-red-500 font-semibold">{formatPercent(s.margin_pct)}</td>
-                  <td className="px-3 py-2.5 text-right tabular text-slate-500">{s.monthly_units.toLocaleString("en-IN")}</td>
-                  <td className="px-3 py-2.5 text-right tabular font-bold text-red-600">
+                  <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.category}</td>
+                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.channel}</td>
+                  <td className="px-3 py-2.5 text-right tabular text-red-500 font-semibold whitespace-nowrap">{formatPercent(s.margin_pct)}</td>
+                  <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">{s.monthly_units.toLocaleString("en-IN")}</td>
+                  <td className="px-3 py-2.5 text-right tabular font-bold text-red-600 whitespace-nowrap">
                     {s.monthly_profit < 0 ? formatCurrency(s.monthly_profit) : "—"}
                   </td>
                   <td className="px-3 py-2.5 text-right">
@@ -191,7 +172,7 @@ export default function ZombiesPage() {
           {selected.size === 0 ? (
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z" /></svg>
-              <p className="text-sm text-slate-400">Select zombies above to simulate P&L impact</p>
+              <p className="text-sm text-slate-400">Select rows to simulate P&L impact</p>
             </div>
           ) : (
             <div className="flex items-center gap-6 flex-wrap">
