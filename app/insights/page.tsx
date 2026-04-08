@@ -1195,6 +1195,192 @@ function StrategyTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
         </div>
       </div>
 
+      {/* Marketing ROI */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Marketing ROI per SKU</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <KPICard
+            title="Gems avg ROI"
+            value={`${avgROIByClassification.gem.toFixed(1)}×`}
+            subtitle="Revenue per ₹1 of marketing spend"
+            color="green"
+          />
+          <KPICard
+            title="Zombies avg ROI"
+            value={`${avgROIByClassification.zombie.toFixed(1)}×`}
+            subtitle="Revenue per ₹1 of marketing spend"
+            color="red"
+          />
+          <KPICard
+            title="Gateway avg ROI"
+            value={`${avgROIByClassification.gateway.toFixed(1)}×`}
+            subtitle="Revenue per ₹1 of marketing spend"
+            color="amber"
+          />
+          <KPICard
+            title="Healthy avg ROI"
+            value={`${avgROIByClassification.healthy.toFixed(1)}×`}
+            subtitle="Revenue per ₹1 of marketing spend"
+            color="blue"
+          />
+        </div>
+        <InsightBanner
+          color="emerald"
+          title="Gems earn more revenue per marketing rupee — not just more margin"
+          body="Marketing ROI = monthly revenue ÷ (marketing cost per unit × monthly units). A gem with 3× ROI turns every ₹1 of ad spend into ₹3 of revenue. A zombie at 0.8× destroys value before cost structure is even considered. Reallocating marketing budget from zombies to gems compounds returns at both the revenue and margin level."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Top 20 vs Bottom 20 — Marketing ROI</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Click any row to inspect the SKU</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+            {/* Top 20 */}
+            <div className="overflow-x-auto">
+              <div className="px-4 py-2.5 bg-emerald-50/60 border-b border-slate-100">
+                <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Top 20 — Highest ROI</p>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <Th>SKU</Th>
+                    <Th>Brand</Th>
+                    <Th right>ROI</Th>
+                    <Th right>Margin</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topMarketingROI.map((s) => (
+                    <tr
+                      key={s.sku_id}
+                      className="border-b border-slate-50 hover:bg-emerald-50/30 cursor-pointer transition-colors"
+                      onClick={() => onSelect(s)}
+                    >
+                      <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                      <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                      <td className="px-3 py-2.5 text-right tabular font-bold text-emerald-600">{s.marketingRoi.toFixed(1)}×</td>
+                      <td className="px-3 py-2.5 text-right tabular font-semibold text-slate-600">{formatPercent(s.margin_pct)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Bottom 20 */}
+            <div className="overflow-x-auto">
+              <div className="px-4 py-2.5 bg-red-50/60 border-b border-slate-100">
+                <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Bottom 20 — Lowest ROI</p>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <Th>SKU</Th>
+                    <Th>Brand</Th>
+                    <Th right>ROI</Th>
+                    <Th right>Margin</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {worstMarketingROI.map((s) => (
+                    <tr
+                      key={s.sku_id}
+                      className="border-b border-slate-50 hover:bg-red-50/30 cursor-pointer transition-colors"
+                      onClick={() => onSelect(s)}
+                    >
+                      <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                      <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                      <td className="px-3 py-2.5 text-right tabular font-bold text-red-500">{s.marketingRoi.toFixed(1)}×</td>
+                      <td className="px-3 py-2.5 text-right tabular font-semibold text-slate-600">{formatPercent(s.margin_pct)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SKU Rationalization */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">SKU Rationalization</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <KPICard
+            title="Rationalization Candidates"
+            value={String(rationalizationSummary.count)}
+            subtitle="Under ₹50K/mo revenue AND under 15% margin"
+            color="red"
+          />
+          <KPICard
+            title="Revenue at Stake"
+            value={formatCurrency(rationalizationSummary.totalRevenue)}
+            subtitle="Monthly revenue from these long-tail SKUs"
+            color="amber"
+          />
+          <KPICard
+            title="Avg Margin"
+            value={formatPercent(rationalizationSummary.avgMargin)}
+            subtitle="Average across all rationalization candidates"
+            color="gray"
+          />
+        </div>
+        <InsightBanner
+          color="red"
+          title={`${rationalizationSummary.count} SKUs generate under ₹50K/month at under 15% margin`}
+          body="These long-tail SKUs contribute almost nothing to revenue but consume full ops bandwidth — warehouse space, procurement cycles, listing management, inventory planning. Cutting them doesn't shrink the business; it shrinks the complexity that is hiding it."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Rationalization Candidates — Worst First</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Gateway SKUs excluded (high repeat rate protects them)</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>SKU</Th>
+                  <Th>Brand</Th>
+                  <Th>Channel</Th>
+                  <Th>Type</Th>
+                  <Th right>Monthly Revenue</Th>
+                  <Th right>Margin%</Th>
+                  <Th right>Monthly Profit</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {rationalizationCandidates.map((s) => (
+                  <tr
+                    key={s.sku_id}
+                    className="border-b border-slate-50 hover:bg-red-50/20 cursor-pointer transition-colors"
+                    onClick={() => onSelect(s)}
+                  >
+                    <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.channel}</td>
+                    <td className="px-3 py-2.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                        s.classification === "zombie"  ? "bg-red-50 text-red-600" :
+                        s.classification === "gem"     ? "bg-emerald-50 text-emerald-700" :
+                                                          "bg-slate-100 text-slate-500"
+                      }`}>
+                        {s.classification}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-600 whitespace-nowrap">{formatCurrency(s.monthly_revenue)}</td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${s.margin_pct >= 0 ? "text-amber-600" : "text-red-500"}`}>
+                      {formatPercent(s.margin_pct)}
+                    </td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${s.monthly_profit >= 0 ? "text-slate-600" : "text-red-500"}`}>
+                      {formatCurrency(s.monthly_profit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       {/* Price Ladder */}
       <div>
         <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Price Ladder by Sub-Category</h3>
