@@ -1,12 +1,13 @@
 "use client";
 import { useState, useMemo } from "react";
 import { zombies } from "@/lib/data";
+import { zombieBreakeven } from "@/lib/calculations";
 import type { ClassifiedSKU } from "@/lib/classify";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
 import KPICard from "@/components/ui/KPICard";
 
-const sorted = [...zombies].sort((a, b) => a.monthly_profit - b.monthly_profit);
+const sorted = [...zombieBreakeven].sort((a, b) => a.monthly_profit - b.monthly_profit);
 const zombieLoss = Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0));
 const brands   = [...new Set(zombies.map((s) => s.brand))];
 const channels = [...new Set(zombies.map((s) => s.channel))];
@@ -126,6 +127,7 @@ export default function ZombiesPage() {
                 <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Units/mo</th>
                 <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Monthly Loss</th>
                 <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Score</th>
+                <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Recovery</th>
               </tr>
             </thead>
             <tbody>
@@ -158,6 +160,17 @@ export default function ZombiesPage() {
                     <span className="inline-flex items-center justify-center min-w-[32px] h-6 rounded-full text-[10px] font-bold bg-red-50 text-red-600 ring-1 ring-red-100">
                       {s.zombie_score}
                     </span>
+                  </td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {s.recoveryType === "channel" ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5 ring-1 ring-blue-100" title={`Move to D2C: +${s.d2cDeltaMargin.toFixed(1)}pp margin`}>
+                        ↗ Move to D2C
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 rounded-full px-2 py-0.5 ring-1 ring-amber-100" title={`Raise price by ₹${s.priceGap.toFixed(0)} to break even`}>
+                        ₹ Reprice +{Math.ceil(s.priceGap)}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
