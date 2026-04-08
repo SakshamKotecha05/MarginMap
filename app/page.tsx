@@ -1,16 +1,19 @@
 "use client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import KPICard from "@/components/ui/KPICard";
-import { portfolioSummary, byBrand, byChannel } from "@/lib/calculations";
+import { portfolioSummary, byChannel, launchSuccessRate, brandZombieRate } from "@/lib/calculations";
 import { zombies, gems } from "@/lib/data";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 
 const topZombies = [...zombies].sort((a, b) => a.monthly_profit - b.monthly_profit).slice(0, 5);
 const topGems    = [...gems].sort((a, b) => b.gem_score - a.gem_score).slice(0, 5);
 
-const brandData = Object.entries(byBrand)
-  .map(([name, v]) => ({ name, margin: parseFloat(v.avgMargin.toFixed(1)), zombies: v.zombies }))
-  .sort((a, b) => b.margin - a.margin);
+const brandData = brandZombieRate.map((v) => ({
+  name:       v.brand,
+  margin:     parseFloat(v.avgMargin.toFixed(1)),
+  zombies:    v.zombies,
+  zombieRate: parseFloat(v.zombieRate.toFixed(1)),
+}));
 
 const channelData = Object.entries(byChannel)
   .map(([name, v]) => ({
@@ -66,8 +69,48 @@ export default function SummaryPage() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard title="Monthly Revenue" value={formatCurrency(portfolioSummary.totalMonthlyRevenue)} subtitle="Across all 600 SKUs" color="blue" icon="₹" />
         <KPICard title="Monthly Profit" value={formatCurrency(portfolioSummary.totalMonthlyProfit)} subtitle={`${formatPercent(portfolioSummary.totalMonthlyProfit / portfolioSummary.totalMonthlyRevenue * 100)} avg margin`} color="green" icon="↗" />
-        <KPICard title="Portfolio Losses" value={formatCurrency(portfolioSummary.totalMonthlyNegativeProfitLoss)} subtitle="₹15,892,978.83/mo from 132 neg-profit SKUs" color="red" icon="↘" />
+        <KPICard title="Portfolio Losses" value={formatCurrency(portfolioSummary.totalMonthlyNegativeProfitLoss)} subtitle="₹15,892,978.83/mo from neg-profit SKUs" color="red" icon="↘" />
         <KPICard title="Hidden Gems" value={`${portfolioSummary.gemCount}`} subtitle="Underinvested SKUs with strong fundamentals" color="green" icon="◆" />
+      </section>
+
+      {/* Intelligence Highlights */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-amber-500 text-base font-bold">%</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium">Launch Success Rate</p>
+            <p className="text-xl font-bold text-slate-900 tabular-nums">{launchSuccessRate.successRate.toFixed(0)}%</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{launchSuccessRate.failing} of {launchSuccessRate.total} launches losing money</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-blue-500 text-base font-bold">↗</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium">Channel Fixable</p>
+            <p className="text-xl font-bold text-slate-900 tabular-nums">{portfolioSummary.zombieCount} zombies</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Many viable via D2C channel shift</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium mb-3">Brand Zombie Rate</p>
+          {brandZombieRate.map((b) => (
+            <div key={b.brand} className="flex items-center justify-between mb-2 last:mb-0">
+              <span className="text-xs text-slate-600 w-28 truncate">{b.brand}</span>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-400 rounded-full" style={{ width: `${b.zombieRate}%` }} />
+                </div>
+                <span className="text-xs font-bold tabular-nums text-red-500 w-10 text-right">
+                  {b.zombieRate.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Classification breakdown — horizontal bar */}
@@ -123,7 +166,7 @@ export default function SummaryPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-slate-900">Avg Margin by Brand</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Little Joys has lowest margin and most zombies</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Little Joys: {brandZombieRate.find(b => b.brand === "Little Joys")?.zombieRate.toFixed(0)}% zombie rate vs Man Matters: {brandZombieRate.find(b => b.brand === "Man Matters")?.zombieRate.toFixed(0)}%</p>
           </div>
           <ResponsiveContainer width="100%" height={140}>
             <BarChart data={brandData} layout="vertical" margin={{ left: 0, right: 16 }}>
