@@ -11,6 +11,16 @@ import {
   ratingProfitCorrelation,
   returnRatingAnomalies,
   channelCostBreakdown,
+  cannibalizationGroups,
+  launchSuccessRate,
+  brandZombieRate,
+  priceLadder,
+  channelFitAnalysis,
+  topMarketingROI,
+  worstMarketingROI,
+  avgROIByClassification,
+  rationalizationCandidates,
+  rationalizationSummary,
 } from "@/lib/calculations";
 import { gateways } from "@/lib/data";
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/formatters";
@@ -68,6 +78,7 @@ const TABS = [
   { id: "gateway",    label: "Gateway",          badge: gateways.length },
   { id: "pareto",     label: "Pareto",           badge: null },
   { id: "inventory",  label: "Inventory Risk",   badge: deadstockRisk.length },
+  { id: "strategy",   label: "Strategy",         badge: cannibalizationGroups.length },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -296,6 +307,71 @@ function ArbitrageTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
               })}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Channel-SKU Fit Score */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Channel-SKU Fit — Optimal Channel Per Product</h3>
+        <InsightBanner
+          color="emerald"
+          title="Not all channels suit all products — the margin spread tells you where each SKU belongs"
+          body="For each multi-channel product family, the channel with the highest average margin is the optimal home. Stocking the same product on a channel where it bleeds margin is a distribution decision, not a product failure. Sort by spread to find the highest-leverage channel shifts."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Top 30 — Biggest Channel Fit Gap</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Sorted by margin spread between optimal and worst channel</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Product</Th>
+                  <Th>Optimal Channel</Th>
+                  <Th>Worst Channel</Th>
+                  <Th right>Best Margin</Th>
+                  <Th right>Worst Margin</Th>
+                  <Th right>Fit Gap</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {channelFitAnalysis.slice(0, 30).map((g) => {
+                  const [brand, , sub] = g.key.split("|");
+                  const best  = g.channelRankings[0];
+                  const worst = g.channelRankings[g.channelRankings.length - 1];
+                  return (
+                    <tr key={g.key} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors">
+                      <td className="px-3 py-3">
+                        <p className="font-semibold text-slate-800 text-[11px]">{brand}</p>
+                        <p className="text-slate-400 text-[10px]">{sub}</p>
+                        <p className="text-slate-300 text-[9px] mt-0.5">{g.items.length} SKUs · {g.channelRankings.length} channels</p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">
+                          {best.channel === "D2C Website" ? "D2C" : best.channel}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600">
+                          {worst.channel === "D2C Website" ? "D2C" : worst.channel}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-right tabular font-bold text-emerald-600">
+                        {formatPercent(best.avgMargin)}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular font-bold text-red-500">
+                        {formatPercent(worst.avgMargin)}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular font-bold text-slate-800">
+                        {formatPercent(g.marginSpread)}pp
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -940,6 +1016,237 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
   );
 }
 
+// ─── Tab: Strategy ─────────────────────────────────────────────────────────
+
+function StrategyTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
+  return (
+    <div className="space-y-6">
+
+      {/* Launch Health */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Launch Funnel Health</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <KPICard
+            title="Launch Success Rate"
+            value={`${launchSuccessRate.successRate.toFixed(0)}%`}
+            subtitle={`${launchSuccessRate.profitable} of ${launchSuccessRate.total} launches are profitable`}
+            color="amber"
+          />
+          <KPICard
+            title="Failing at Launch"
+            value={String(launchSuccessRate.failing)}
+            subtitle="Products losing money before they've scaled"
+            color="red"
+          />
+          <KPICard
+            title="Launch SKUs Total"
+            value={String(launchSuccessRate.total)}
+            subtitle="Currently in Launch lifecycle stage"
+            color="blue"
+          />
+        </div>
+        <InsightBanner
+          color="amber"
+          title={`${launchSuccessRate.failing} products are losing money before they've even scaled`}
+          body="A launch-stage SKU with negative margins is an early death signal — not a growth problem. At this point the cost structure is wrong, not the sales volume. These need pricing or channel review immediately, not more marketing spend."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Failing Launch SKUs — Worst First</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>SKU</Th>
+                  <Th>Brand</Th>
+                  <Th>Category</Th>
+                  <Th>Channel</Th>
+                  <Th right>Margin%</Th>
+                  <Th right>Monthly Loss</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {launchSuccessRate.failingSkus.map((s) => (
+                  <tr
+                    key={s.sku_id}
+                    className="border-b border-slate-50 hover:bg-amber-50/30 cursor-pointer transition-colors"
+                    onClick={() => onSelect(s)}
+                  >
+                    <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{s.sku_id}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.category}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.channel}</td>
+                    <td className="px-3 py-2.5 text-right tabular font-bold text-red-500 whitespace-nowrap">{formatPercent(s.margin_pct)}</td>
+                    <td className="px-3 py-2.5 text-right tabular font-bold text-red-600 whitespace-nowrap">{formatCurrency(s.monthly_profit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Brand Zombie Rates */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Brand Zombie Rate</h3>
+        <InsightBanner
+          color="red"
+          title="Zombie rate (%) reveals brand strategy problems — not just SKU problems"
+          body="Little Joys has more zombies in absolute count AND as a proportion of its portfolio. Count hides the structural issue: one brand is systematically launching or retaining unprofitable SKUs at a higher rate than the others."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Brand</Th>
+                  <Th right>Total SKUs</Th>
+                  <Th right>Zombies</Th>
+                  <Th right>Zombie Rate</Th>
+                  <Th right>Gems</Th>
+                  <Th right>Gem Rate</Th>
+                  <Th right>Avg Margin</Th>
+                  <Th right>Monthly Profit</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {brandZombieRate.map((r) => (
+                  <tr key={r.brand} className="border-b border-slate-50">
+                    <td className="px-3 py-3 font-semibold text-slate-800">{r.brand}</td>
+                    <td className="px-3 py-3 text-right tabular text-slate-500">{r.count}</td>
+                    <td className="px-3 py-3 text-right tabular font-bold text-red-500">{r.zombies}</td>
+                    <td className="px-3 py-3 text-right tabular font-bold">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        r.zombieRate > 25 ? "bg-red-50 text-red-600" : r.zombieRate > 20 ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-700"
+                      }`}>
+                        {r.zombieRate.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
+                    <td className="px-3 py-3 text-right tabular text-emerald-600">{r.gemRate.toFixed(1)}%</td>
+                    <td className={`px-3 py-3 text-right tabular font-bold ${r.avgMargin >= 20 ? "text-emerald-600" : r.avgMargin >= 15 ? "text-amber-600" : "text-red-500"}`}>
+                      {formatPercent(r.avgMargin)}
+                    </td>
+                    <td className={`px-3 py-3 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatCurrency(r.monthlyProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Cannibalization */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Internal Cannibalization</h3>
+        <InsightBanner
+          color="blue"
+          title={`${cannibalizationGroups.length} groups of SKUs are competing with themselves`}
+          body="Same brand, same sub-category, same channel — MRP within 15% of each other. These SKUs split demand instead of growing it. A customer choosing between two nearly-identical products at the same price is a customer you've already won; you're just splitting their spend across two SKUs, inflating the total SKU count with no incremental revenue."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Cannibalizing SKU Groups</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Same brand · same sub-category · same channel · MRP within 15%</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Brand</Th>
+                  <Th>Sub-Category</Th>
+                  <Th>Channel</Th>
+                  <Th right>SKUs</Th>
+                  <Th right>MRP Range</Th>
+                  <Th right>Avg Margin</Th>
+                  <Th right>Monthly Revenue</Th>
+                  <Th right>Has Zombies</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {cannibalizationGroups.map((g, i) => (
+                  <tr key={i} className="border-b border-slate-50">
+                    <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{g.brand}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{g.subCategory}</td>
+                    <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{g.channel}</td>
+                    <td className="px-3 py-2.5 text-right tabular font-bold text-blue-600">{g.skuCount}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">
+                      ₹{g.minMrp.toLocaleString("en-IN")}–₹{g.maxMrp.toLocaleString("en-IN")}
+                    </td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${g.avgMargin >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatPercent(g.avgMargin)}
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500">{formatCurrency(g.totalMonthlyRevenue)}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      {g.hasZombies ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-600">Yes</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-400">No</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Price Ladder */}
+      <div>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 uppercase tracking-wider">Price Ladder by Sub-Category</h3>
+        <InsightBanner
+          color="blue"
+          title="Crowded price tiers = internal price competition. Gaps = unserved customer segments."
+          body="The crowding score shows how many SKUs cluster within 15% of each other in MRP. High crowding means customers see near-identical price options from the same brand — internal competition, not market coverage. A high MRP range with low crowding suggests a healthy price ladder with options at each tier."
+        />
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Sub-Category</Th>
+                  <Th right>SKUs</Th>
+                  <Th right>Min MRP</Th>
+                  <Th right>Max MRP</Th>
+                  <Th right>Price Range</Th>
+                  <Th right>Crowding Score</Th>
+                  <Th right>Avg Margin</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {priceLadder.map((r) => (
+                  <tr key={r.subCategory} className="border-b border-slate-50">
+                    <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{r.subCategory}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500">{r.count}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">₹{r.minMrp.toLocaleString("en-IN")}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">₹{r.maxMrp.toLocaleString("en-IN")}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500 whitespace-nowrap">₹{r.mrpRange.toLocaleString("en-IN")}</td>
+                    <td className="px-3 py-2.5 text-right tabular">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        r.crowdingScore >= 5 ? "bg-red-50 text-red-600" : r.crowdingScore >= 3 ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-700"
+                      }`}>
+                        {r.crowdingScore} SKUs
+                      </span>
+                    </td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${r.avgMargin >= 20 ? "text-emerald-600" : r.avgMargin >= 10 ? "text-amber-600" : "text-red-500"}`}>
+                      {formatPercent(r.avgMargin)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────
 
 export default function InsightsPage() {
@@ -993,6 +1300,7 @@ export default function InsightsPage() {
         {activeTab === "gateway"   && <GatewayTab onSelect={setDetailSKU} />}
         {activeTab === "pareto"    && <ParetoTab />}
         {activeTab === "inventory" && <InventoryTab onSelect={setDetailSKU} />}
+        {activeTab === "strategy"  && <StrategyTab onSelect={setDetailSKU} />}
       </div>
 
       <SKUDetailPanel sku={detailSKU} onClose={() => setDetailSKU(null)} />
