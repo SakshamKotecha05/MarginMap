@@ -7,22 +7,69 @@ import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
 import KPICard from "@/components/ui/KPICard";
 
-const sorted = [...zombieBreakeven].sort((a, b) => a.monthly_profit - b.monthly_profit);
 const zombieLoss = Math.abs(zombies.reduce((s, d) => s + Math.min(d.monthly_profit, 0), 0));
 const brands   = [...new Set(zombies.map((s) => s.brand))];
 const channels = [...new Set(zombies.map((s) => s.channel))];
 
-export default function ZombiesPage() {
-  const [selected, setSelected]       = useState<Set<string>>(new Set());
-  const [brandFilter, setBrandFilter]   = useState("all");
-  const [channelFilter, setChannelFilter] = useState("all");
-  const [detailSKU, setDetailSKU]     = useState<ClassifiedSKU | null>(null);
+type SortField = "brand" | "margin_pct" | "monthly_units" | "monthly_profit" | "zombie_score";
 
-  const filtered = useMemo(() => sorted.filter((s) => {
-    if (brandFilter   !== "all" && s.brand   !== brandFilter)   return false;
-    if (channelFilter !== "all" && s.channel !== channelFilter) return false;
-    return true;
-  }), [brandFilter, channelFilter]);
+function SortTh({
+  children, active, dir, onClick, align = "right",
+}: {
+  children: React.ReactNode;
+  active: boolean;
+  dir: "asc" | "desc";
+  onClick: () => void;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      onClick={onClick}
+      className={`px-3 py-3 text-[10px] font-semibold uppercase tracking-wider cursor-pointer select-none transition-colors ${
+        active ? "text-slate-700" : "text-slate-400 hover:text-slate-600"
+      } ${align === "right" ? "text-right" : "text-left"}`}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        {children}
+        <span className="inline-flex flex-col gap-px leading-none">
+          <svg className={`w-[7px] h-[5px] ${active && dir === "asc" ? "text-slate-700" : "text-slate-300"}`} viewBox="0 0 7 5" fill="currentColor"><path d="M3.5 0 7 5H0z"/></svg>
+          <svg className={`w-[7px] h-[5px] ${active && dir === "desc" ? "text-slate-700" : "text-slate-300"}`} viewBox="0 0 7 5" fill="currentColor"><path d="M3.5 5 0 0h7z"/></svg>
+        </span>
+      </span>
+    </th>
+  );
+}
+
+export default function ZombiesPage() {
+  const [selected, setSelected]           = useState<Set<string>>(new Set());
+  const [brandFilter, setBrandFilter]     = useState("all");
+  const [channelFilter, setChannelFilter] = useState("all");
+  const [detailSKU, setDetailSKU]         = useState<ClassifiedSKU | null>(null);
+  const [sortField, setSortField]         = useState<SortField>("monthly_profit");
+  const [sortDir, setSortDir]             = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(d => d === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDir(field === "zombie_score" ? "desc" : "asc");
+    }
+  };
+
+  const filtered = useMemo(() => {
+    const rows = zombieBreakeven.filter((s) => {
+      if (brandFilter   !== "all" && s.brand   !== brandFilter)   return false;
+      if (channelFilter !== "all" && s.channel !== channelFilter) return false;
+      return true;
+    });
+    return rows.sort((a, b) => {
+      if (sortField === "brand") {
+        return sortDir === "asc" ? a.brand.localeCompare(b.brand) : b.brand.localeCompare(a.brand);
+      }
+      return sortDir === "asc" ? a[sortField] - b[sortField] : b[sortField] - a[sortField];
+    });
+  }, [brandFilter, channelFilter, sortField, sortDir]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -95,7 +142,6 @@ export default function ZombiesPage() {
           <option value="all">All Channels</option>
           {channels.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <span className="text-[11px] text-slate-400 font-medium ml-1">{filtered.length} shown</span>
         <button
           onClick={downloadCSV}
           className="ml-auto text-xs font-medium border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-1.5"
@@ -120,13 +166,13 @@ export default function ZombiesPage() {
                   />
                 </th>
                 <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">SKU</th>
-                <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Brand</th>
+                <SortTh align="left"  active={sortField === "brand"}          dir={sortDir} onClick={() => toggleSort("brand")}>Brand</SortTh>
                 <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Category</th>
                 <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Channel</th>
-                <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Margin%</th>
-                <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Units/mo</th>
-                <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Monthly Loss</th>
-                <th className="px-3 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Score</th>
+                <SortTh align="right" active={sortField === "margin_pct"}     dir={sortDir} onClick={() => toggleSort("margin_pct")}>Margin%</SortTh>
+                <SortTh align="right" active={sortField === "monthly_units"}  dir={sortDir} onClick={() => toggleSort("monthly_units")}>Units/mo</SortTh>
+                <SortTh align="right" active={sortField === "monthly_profit"} dir={sortDir} onClick={() => toggleSort("monthly_profit")}>Monthly Loss</SortTh>
+                <SortTh align="right" active={sortField === "zombie_score"}   dir={sortDir} onClick={() => toggleSort("zombie_score")}>Score</SortTh>
                 <th className="px-3 py-3 text-left text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Recovery</th>
               </tr>
             </thead>
