@@ -100,7 +100,7 @@ function SubNav<T extends string>({
   active,
   onChange,
 }: {
-  items: Array<{ id: T; label: string; badge?: number | null }>;
+  items: ReadonlyArray<{ id: T; label: string; badge?: number | null }>;
   active: T;
   onChange: (id: T) => void;
 }) {
@@ -584,7 +584,18 @@ function AnomalyGroup({
   );
 }
 
+const ANOMALY_SUBNAV = [
+  { id: "highMarginBadRating", label: "High Margin, Bad Rating", badge: anomalies.highMarginBadRating.length },
+  { id: "negMarginGoodRating", label: "Neg Margin, Good Rating", badge: anomalies.negMarginGoodRating.length },
+  { id: "declineMislabeled",   label: "Mislabeled Decline",      badge: anomalies.declineMislabeled.length },
+  { id: "earlyDeathSignals",   label: "Early Death Signals",     badge: anomalies.earlyDeathSignals.length },
+] as const;
+
+type AnomalySubId = (typeof ANOMALY_SUBNAV)[number]["id"];
+
 function AnomaliesTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
+  const [activeSub, setActiveSub] = useState<AnomalySubId>("highMarginBadRating");
+
   return (
     <div className="space-y-5">
       {/* Correlation callout */}
@@ -599,205 +610,277 @@ function AnomaliesTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
         body="A 5-star product is not automatically profitable. Selling price (r = 0.60) and margin % (r = 0.57) are the real profit drivers. Optimizing for ratings alone is a flawed strategy — price and cost structure are what matter."
       />
 
-      <AnomalyGroup
-        title="High Margin, Terrible Rating"
-        subtitle="margin > 40% but avg_rating < 2.0 — economics are fine, experience is broken"
-        color="amber"
-        skus={anomalies.highMarginBadRating}
-        onSelect={onSelect}
-        cols={[
-          { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
-          { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
-          { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
-          { label: "Margin%", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatPercent(s.margin_pct)}</span> },
-          { label: "Rating", right: true, value: (s) => <span className="font-bold text-red-500">★ {s.avg_rating.toFixed(1)}</span> },
-        ]}
-      />
+      <SubNav items={ANOMALY_SUBNAV} active={activeSub} onChange={setActiveSub} />
 
-      <AnomalyGroup
-        title="Negative Margin, Great Rating"
-        subtitle="margin < 0 but avg_rating ≥ 4.0 — customers love it, pricing is wrong"
-        color="emerald"
-        skus={anomalies.negMarginGoodRating}
-        onSelect={onSelect}
-        cols={[
-          { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
-          { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
-          { label: "Channel", value: (s) => <span className="text-slate-500">{s.channel}</span> },
-          { label: "Margin%", right: true, value: (s) => <span className="font-bold text-red-500">{formatPercent(s.margin_pct)}</span> },
-          { label: "Rating", right: true, value: (s) => <span className="font-bold text-emerald-600">★ {s.avg_rating.toFixed(1)}</span> },
-          { label: "Loss/mo", right: true, value: (s) => <span className="font-bold text-red-500">{formatCurrency(Math.abs(s.monthly_profit))}</span> },
-        ]}
-      />
+      {activeSub === "highMarginBadRating" && (
+        <AnomalyGroup
+          title="High Margin, Terrible Rating"
+          subtitle="margin > 40% but avg_rating < 2.0 — economics are fine, experience is broken"
+          color="amber"
+          skus={anomalies.highMarginBadRating}
+          onSelect={onSelect}
+          cols={[
+            { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+            { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+            { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
+            { label: "Margin%", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatPercent(s.margin_pct)}</span> },
+            { label: "Rating", right: true, value: (s) => <span className="font-bold text-red-500">★ {s.avg_rating.toFixed(1)}</span> },
+          ]}
+        />
+      )}
 
-      <AnomalyGroup
-        title="Mislabeled Decline"
-        subtitle="lifecycle_stage = Decline but margin > 35% — actually healthy, wrongly tagged"
-        color="blue"
-        skus={anomalies.declineMislabeled}
-        onSelect={onSelect}
-        cols={[
-          { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
-          { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
-          { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
-          { label: "Margin%", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatPercent(s.margin_pct)}</span> },
-          { label: "Units/mo", right: true, value: (s) => <span className="tabular text-slate-500">{formatNumber(s.monthly_units)}</span> },
-          { label: "Profit/mo", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatCurrency(s.monthly_profit)}</span> },
-        ]}
-      />
+      {activeSub === "negMarginGoodRating" && (
+        <AnomalyGroup
+          title="Negative Margin, Great Rating"
+          subtitle="margin < 0 but avg_rating ≥ 4.0 — customers love it, pricing is wrong"
+          color="emerald"
+          skus={anomalies.negMarginGoodRating}
+          onSelect={onSelect}
+          cols={[
+            { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+            { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+            { label: "Channel", value: (s) => <span className="text-slate-500">{s.channel}</span> },
+            { label: "Margin%", right: true, value: (s) => <span className="font-bold text-red-500">{formatPercent(s.margin_pct)}</span> },
+            { label: "Rating", right: true, value: (s) => <span className="font-bold text-emerald-600">★ {s.avg_rating.toFixed(1)}</span> },
+            { label: "Loss/mo", right: true, value: (s) => <span className="font-bold text-red-500">{formatCurrency(Math.abs(s.monthly_profit))}</span> },
+          ]}
+        />
+      )}
 
-      <AnomalyGroup
-        title="Early Death Signals"
-        subtitle="lifecycle_stage = Launch but already losing money — needs immediate review"
-        color="red"
-        skus={anomalies.earlyDeathSignals}
-        onSelect={onSelect}
-        cols={[
-          { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
-          { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
-          { label: "Channel", value: (s) => <span className="text-slate-500">{s.channel}</span> },
-          { label: "Margin%", right: true, value: (s) => <span className="font-bold text-red-500">{formatPercent(s.margin_pct)}</span> },
-          { label: "Months Listed", right: true, value: (s) => <span className="tabular text-slate-500">{s.months_listed}mo</span> },
-          { label: "Loss/mo", right: true, value: (s) => <span className="font-bold text-red-500">{formatCurrency(Math.abs(s.monthly_profit))}</span> },
-        ]}
-      />
+      {activeSub === "declineMislabeled" && (
+        <AnomalyGroup
+          title="Mislabeled Decline"
+          subtitle="lifecycle_stage = Decline but margin > 35% — actually healthy, wrongly tagged"
+          color="blue"
+          skus={anomalies.declineMislabeled}
+          onSelect={onSelect}
+          cols={[
+            { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+            { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+            { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
+            { label: "Margin%", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatPercent(s.margin_pct)}</span> },
+            { label: "Units/mo", right: true, value: (s) => <span className="tabular text-slate-500">{formatNumber(s.monthly_units)}</span> },
+            { label: "Profit/mo", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatCurrency(s.monthly_profit)}</span> },
+          ]}
+        />
+      )}
+
+      {activeSub === "earlyDeathSignals" && (
+        <AnomalyGroup
+          title="Early Death Signals"
+          subtitle="lifecycle_stage = Launch but already losing money — needs immediate review"
+          color="red"
+          skus={anomalies.earlyDeathSignals}
+          onSelect={onSelect}
+          cols={[
+            { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+            { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+            { label: "Channel", value: (s) => <span className="text-slate-500">{s.channel}</span> },
+            { label: "Margin%", right: true, value: (s) => <span className="font-bold text-red-500">{formatPercent(s.margin_pct)}</span> },
+            { label: "Months Listed", right: true, value: (s) => <span className="tabular text-slate-500">{s.months_listed}mo</span> },
+            { label: "Loss/mo", right: true, value: (s) => <span className="font-bold text-red-500">{formatCurrency(Math.abs(s.monthly_profit))}</span> },
+          ]}
+        />
+      )}
     </div>
   );
 }
 
 // ─── Tab: Brand & Category ─────────────────────────────────────────────────
 
+// Margin mini-bar helper — scale tops at 40%
+function MarginBar({ margin, threshold }: { margin: number; threshold: "brand" | "category" }) {
+  const hi = threshold === "category" ? 22 : 20;
+  const color = margin >= hi ? "emerald" : margin >= 15 ? "amber" : "red";
+  const colorCls = {
+    emerald: { text: "text-emerald-600", track: "bg-emerald-100", fill: "bg-emerald-500" },
+    amber:   { text: "text-amber-600",   track: "bg-amber-100",   fill: "bg-amber-500" },
+    red:     { text: "text-red-500",     track: "bg-red-100",     fill: "bg-red-400" },
+  }[color];
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <span className={`font-bold tabular ${colorCls.text}`}>{formatPercent(margin)}</span>
+      <div className={`h-1 rounded-full w-14 overflow-hidden ${colorCls.track}`}>
+        <div className={`h-full rounded-full ${colorCls.fill}`} style={{ width: `${Math.min(margin / 40, 1) * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+const worstLifecycle = [...lifecycleRows].sort((a, b) => b.zombies - a.zombies)[0];
+
 function BrandCategoryTab() {
   return (
     <div className="space-y-5">
-      {/* Brand table */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-sm font-semibold text-slate-800">Brand Health</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Sorted by avg margin — highest to lowest</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <Th>Brand</Th>
-                <Th right>SKUs</Th>
-                <Th right>Avg Margin</Th>
-                <Th right>Zombies</Th>
-                <Th right>Gems</Th>
-                <Th right>Monthly Revenue</Th>
-                <Th right>Monthly Profit</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {brandRows.map((r) => (
-                <tr key={r.brand} className="border-b border-slate-50">
-                  <td className="px-3 py-3 font-semibold text-slate-800">{r.brand}</td>
-                  <td className="px-3 py-3 text-right tabular text-slate-500">{r.count}</td>
-                  <td className={`px-3 py-3 text-right tabular font-bold ${r.avgMargin >= 20 ? "text-emerald-600" : r.avgMargin >= 15 ? "text-amber-600" : "text-red-500"}`}>
-                    {formatPercent(r.avgMargin)}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular text-red-500 font-semibold">{r.zombies}</td>
-                  <td className="px-3 py-3 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
-                  <td className="px-3 py-3 text-right tabular text-slate-500">{formatCurrency(r.monthlyRevenue)}</td>
-                  <td className={`px-3 py-3 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                    {formatCurrency(r.monthlyProfit)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+      {/* KPI summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <KPICard
+          title="Top Brand"
+          value={`${brandRows[0]?.brand ?? "—"} · ${formatPercent(brandRows[0]?.avgMargin ?? 0)}`}
+          subtitle={`${brandRows[0]?.count ?? 0} SKUs · ${brandRows[0]?.zombies ?? 0} zombies`}
+          color="green"
+        />
+        <KPICard
+          title="Top Category"
+          value={`${categoryRows[0]?.cat ?? "—"} · ${formatPercent(categoryRows[0]?.avgMargin ?? 0)}`}
+          subtitle={`${categoryRows[0]?.count ?? 0} SKUs · ${categoryRows[0]?.zombies ?? 0} zombies`}
+          color="green"
+        />
+        <KPICard
+          title="Most Zombies (Lifecycle)"
+          value={`${worstLifecycle?.stage ?? "—"} · ${worstLifecycle?.zombies ?? 0}`}
+          subtitle={`${formatPercent(worstLifecycle?.avgMargin ?? 0)} avg margin`}
+          color="red"
+        />
       </div>
 
-      {/* Category table */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-sm font-semibold text-slate-800">Category Rankings</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Sorted by avg margin — Hair Oil tops, Serum has most zombies</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <Th>Category</Th>
-                <Th right>SKUs</Th>
-                <Th right>Avg Margin</Th>
-                <Th right>Zombies</Th>
-                <Th right>Gems</Th>
-                <Th right>Monthly Profit</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {categoryRows.map((r, i) => (
-                <tr key={r.cat} className="border-b border-slate-50">
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-300">#{i + 1}</span>
-                      <span className="font-semibold text-slate-800">{r.cat}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular text-slate-500">{r.count}</td>
-                  <td className={`px-3 py-2.5 text-right tabular font-bold ${r.avgMargin >= 22 ? "text-emerald-600" : r.avgMargin >= 15 ? "text-amber-600" : "text-red-500"}`}>
-                    {formatPercent(r.avgMargin)}
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular text-red-500 font-semibold">{r.zombies}</td>
-                  <td className="px-3 py-2.5 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
-                  <td className={`px-3 py-2.5 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                    {formatCurrency(r.monthlyProfit)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <InsightBanner
+        color="blue"
+        title="Platform fees (15–16%) drive marketplace zombies — not COGS"
+        body="D2C Website averages 29.5% margin vs Flipkart at 10.6% — an 18.9pp gap caused almost entirely by platform fees. The same product, sold on a different channel, swings from gem to zombie."
+      />
 
-      {/* Lifecycle table */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-sm font-semibold text-slate-800">Lifecycle Stage Analysis</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">34 Decline SKUs still earn &gt;35% margin — mislabeled. 28 Launch SKUs already losing money.</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <Th>Stage</Th>
-                <Th right>SKUs</Th>
-                <Th right>Avg Margin</Th>
-                <Th right>Zombies</Th>
-                <Th right>Gems</Th>
-                <Th right>Monthly Profit</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {lifecycleRows.map((r) => (
-                <tr key={r.stage} className="border-b border-slate-50">
-                  <td className="px-3 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      r.stage === "Launch"  ? "bg-blue-50 text-blue-600" :
-                      r.stage === "Growth"  ? "bg-emerald-50 text-emerald-600" :
-                      r.stage === "Mature"  ? "bg-amber-50 text-amber-600" :
-                      "bg-slate-100 text-slate-500"
-                    }`}>
-                      {r.stage}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-right tabular text-slate-500">{r.count}</td>
-                  <td className={`px-3 py-3 text-right tabular font-bold ${r.avgMargin >= 20 ? "text-emerald-600" : r.avgMargin >= 15 ? "text-amber-600" : "text-red-500"}`}>
-                    {formatPercent(r.avgMargin)}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular text-red-500 font-semibold">{r.zombies}</td>
-                  <td className="px-3 py-3 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
-                  <td className={`px-3 py-3 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                    {formatCurrency(r.monthlyProfit)}
-                  </td>
+      {/* Three tables side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+        {/* Brand table */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Brand Health</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Sorted by avg margin</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Brand</Th>
+                  <Th right>SKUs</Th>
+                  <Th right>Margin</Th>
+                  <Th right>Zombies</Th>
+                  <Th right>Gems</Th>
+                  <Th right>Profit/mo</Th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {brandRows.map((r) => (
+                  <tr key={r.brand} className={`border-b border-slate-50 border-l-2 ${
+                    r.avgMargin >= 20 ? "border-l-emerald-300" : r.avgMargin >= 15 ? "border-l-amber-300" : "border-l-red-300"
+                  }`}>
+                    <td className="px-3 py-3 font-semibold text-slate-800">{r.brand}</td>
+                    <td className="px-3 py-3 text-right tabular text-slate-500">{r.count}</td>
+                    <td className="px-3 py-3 text-right">
+                      <MarginBar margin={r.avgMargin} threshold="brand" />
+                    </td>
+                    <td className="px-3 py-3 text-right tabular">
+                      <span className="text-red-500 font-semibold">{r.zombies}</span>
+                      <span className="ml-1 text-[9px] text-slate-400">({((r.zombies / r.count) * 100).toFixed(0)}%)</span>
+                    </td>
+                    <td className="px-3 py-3 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
+                    <td className={`px-3 py-3 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatCurrency(r.monthlyProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        {/* Category table */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Category Rankings</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Hair Oil tops, Serum most zombies</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Category</Th>
+                  <Th right>SKUs</Th>
+                  <Th right>Margin</Th>
+                  <Th right>Zombies</Th>
+                  <Th right>Gems</Th>
+                  <Th right>Profit/mo</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {categoryRows.map((r, i) => (
+                  <tr key={r.cat} className={`border-b border-slate-50 border-l-2 ${
+                    r.avgMargin >= 22 ? "border-l-emerald-300" : r.avgMargin >= 15 ? "border-l-amber-300" : "border-l-red-300"
+                  }`}>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-300">#{i + 1}</span>
+                        <span className="font-semibold text-slate-800">{r.cat}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500">{r.count}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <MarginBar margin={r.avgMargin} threshold="category" />
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-red-500 font-semibold">{r.zombies}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatCurrency(r.monthlyProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Lifecycle table */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100">
+            <p className="text-sm font-semibold text-slate-800">Lifecycle Stages</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">34 Decline mislabeled · 28 Launch losing</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <Th>Stage</Th>
+                  <Th right>SKUs</Th>
+                  <Th right>Margin</Th>
+                  <Th right>Zombies</Th>
+                  <Th right>Gems</Th>
+                  <Th right>Profit/mo</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {lifecycleRows.map((r) => (
+                  <tr key={r.stage} className={`border-b border-slate-50 border-l-2 ${
+                    r.avgMargin >= 20 ? "border-l-emerald-300" : r.avgMargin >= 15 ? "border-l-amber-300" : "border-l-red-300"
+                  }`}>
+                    <td className="px-3 py-2.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        r.stage === "Launch"  ? "bg-blue-50 text-blue-600" :
+                        r.stage === "Growth"  ? "bg-emerald-50 text-emerald-600" :
+                        r.stage === "Mature"  ? "bg-amber-50 text-amber-600" :
+                        "bg-slate-100 text-slate-500"
+                      }`}>
+                        {r.stage}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-slate-500">{r.count}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <MarginBar margin={r.avgMargin} threshold="brand" />
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular text-red-500 font-semibold">{r.zombies}</td>
+                    <td className="px-3 py-2.5 text-right tabular text-emerald-600 font-semibold">{r.gems}</td>
+                    <td className={`px-3 py-2.5 text-right tabular font-bold ${r.monthlyProfit >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatCurrency(r.monthlyProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   );
