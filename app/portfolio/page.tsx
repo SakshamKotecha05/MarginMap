@@ -352,7 +352,7 @@ export default function PortfolioPage() {
                 </span>
               </div>
 
-              <p className="text-xs font-semibold text-slate-700">Kill List ({zombieBreakeven.length}) <span className="text-slate-400 font-normal">— click column headers to sort</span></p>
+              <p className="text-xs font-semibold text-slate-700">Kill List ({zombieBreakeven.length})</p>
 
               {/* Table */}
               <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
