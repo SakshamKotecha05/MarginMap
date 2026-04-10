@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import KPICard from "@/components/ui/KPICard";
 import { portfolioSummary, byChannel, launchSuccessRate, brandZombieRate } from "@/lib/calculations";
@@ -44,6 +45,13 @@ const actions = [
   },
 ];
 
+const heroStats = [
+  { label: "Annual bleed",    value: "₹19.07 Cr",              color: "text-white" },
+  { label: "D2C advantage",  value: "+14.4pp margin",          color: "text-emerald-400" },
+  { label: "Hidden gems",    value: `${portfolioSummary.gemCount} SKUs`, color: "text-white" },
+  { label: "Channel fixable", value: "75 products",            color: "text-white" },
+];
+
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
@@ -55,29 +63,89 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function SummaryPage() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>(".scroll-reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -32px 0px" }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="px-4 py-6 lg:px-8 space-y-6 max-w-[1400px] mx-auto">
-      {/* Header with gradient mesh */}
-      <div className="gradient-mesh rounded-2xl px-6 py-5 -mx-1">
-        <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Portfolio Summary</h1>
-        <p className="text-sm text-slate-500 mt-1.5">
-          Analyzing 600 SKUs across Man Matters, Be Bodywise & Little Joys
-        </p>
+
+      {/* ── Hero — signature moment ── */}
+      <div className="relative bg-slate-950 rounded-2xl overflow-hidden -mx-1 animate-fade-up delay-0">
+        {/* Ambient glow field */}
+        <div className="absolute -top-24 -left-16 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-72 h-52 bg-emerald-500/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[500px] h-24 bg-blue-900/20 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 px-8 lg:px-12 py-12 lg:py-16">
+          {/* Eyebrow */}
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-8">
+            Mosaic Wellness · 600 SKUs · 5 Channels · 3 Brands
+          </p>
+
+          {/* Number — slides up from clipped container */}
+          <div className="overflow-hidden">
+            <h1
+              className="hero-word text-7xl sm:text-8xl lg:text-[9rem] font-bold text-white tracking-tighter leading-none tabular"
+              style={{ animationDelay: "80ms" }}
+            >
+              ₹1.59 Cr
+            </h1>
+          </div>
+
+          {/* Subtitle — follows 270ms after number */}
+          <div className="overflow-hidden mt-3 mb-10">
+            <p
+              className="hero-word text-slate-400 text-lg lg:text-xl font-light"
+              style={{ animationDelay: "270ms" }}
+            >
+              lost every month to{" "}
+              <span className="text-red-400 font-medium">188 zombie products</span>
+            </p>
+          </div>
+
+          {/* Stats — staggered fade-up after subtitle */}
+          <div className="flex flex-wrap gap-6 pt-6 border-t border-white/[0.06]">
+            {heroStats.map(({ label, value, color }, i) => (
+              <div
+                key={label}
+                className="animate-fade-up"
+                style={{ animationDelay: `${480 + i * 80}ms` }}
+              >
+                <p className="text-[11px] text-slate-500 uppercase tracking-widest">{label}</p>
+                <p className={`text-xl font-bold tabular mt-1 ${color}`}>{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* ── KPI Cards — staggered entrance ── */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard title="Monthly Revenue" value={formatCurrency(portfolioSummary.totalMonthlyRevenue)} subtitle="Across all 600 SKUs" color="blue" icon="₹" />
-        <KPICard title="Monthly Profit" value={formatCurrency(portfolioSummary.totalMonthlyProfit)} subtitle={`${formatPercent(portfolioSummary.totalMonthlyProfit / portfolioSummary.totalMonthlyRevenue * 100)} avg margin`} color="green" icon="↗" />
-        <KPICard title="Portfolio Losses" value={formatCurrency(portfolioSummary.totalMonthlyNegativeProfitLoss)} subtitle="₹15,892,978.83/mo from neg-profit SKUs" color="red" icon="↘" />
-        <KPICard title="Hidden Gems" value={`${portfolioSummary.gemCount}`} subtitle="Underinvested SKUs with strong fundamentals" color="green" icon="◆" />
+        <div className="animate-fade-up delay-80 h-full"><KPICard title="Monthly Revenue" value={formatCurrency(portfolioSummary.totalMonthlyRevenue)} subtitle="Across all 600 SKUs" color="blue" icon={<svg fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" /></svg>} /></div>
+        <div className="animate-fade-up delay-160 h-full"><KPICard title="Monthly Profit" value={formatCurrency(portfolioSummary.totalMonthlyProfit)} subtitle={`${formatPercent(portfolioSummary.totalMonthlyProfit / portfolioSummary.totalMonthlyRevenue * 100)} avg margin`} color="green" icon={<svg fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" /></svg>} /></div>
+        <div className="animate-fade-up delay-240 h-full"><KPICard title="Portfolio Losses" value={formatCurrency(portfolioSummary.totalMonthlyNegativeProfitLoss)} subtitle="₹15,892,978.83/mo from neg-profit SKUs" color="red" icon={<svg fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" /></svg>} /></div>
+        <div className="animate-fade-up delay-320 h-full"><KPICard title="Hidden Gems" value={`${portfolioSummary.gemCount}`} subtitle="Underinvested SKUs with strong fundamentals" color="green" icon={<svg fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" /></svg>} /></div>
       </section>
 
-      {/* Intelligence Highlights */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+      {/* ── Intelligence Highlights ── */}
+      <section className="scroll-reveal grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-amber-500 text-base font-bold">%</span>
+            <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
           </div>
           <div className="min-w-0">
             <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium">Launch Success Rate</p>
@@ -85,9 +153,9 @@ export default function SummaryPage() {
             <p className="text-[11px] text-slate-400 mt-0.5">{launchSuccessRate.failing} of {launchSuccessRate.total} launches losing money</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+        <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-blue-500 text-base font-bold">↗</span>
+            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" /></svg>
           </div>
           <div className="min-w-0">
             <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium">Channel Fixable</p>
@@ -95,7 +163,7 @@ export default function SummaryPage() {
             <p className="text-[11px] text-slate-400 mt-0.5">Many viable via D2C channel shift</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white rounded-xl shadow-md p-4">
           <p className="text-[11px] text-slate-400 uppercase tracking-wider font-medium mb-3">Brand Zombie Rate</p>
           {brandZombieRate.map((b) => (
             <div key={b.brand} className="flex items-center justify-between mb-2 last:mb-0">
@@ -113,9 +181,9 @@ export default function SummaryPage() {
         </div>
       </section>
 
-      {/* Classification breakdown — horizontal bar */}
-      <section className="bg-white rounded-2xl shadow-sm p-5">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Portfolio Composition</p>
+      {/* ── Portfolio Composition ── */}
+      <section className="scroll-reveal bg-white rounded-2xl shadow-md p-5">
+        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">Portfolio Composition</p>
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
           {[
             { pct: portfolioSummary.zombieCount / 600 * 100,  color: "bg-red-500",     label: "Zombie" },
@@ -135,19 +203,19 @@ export default function SummaryPage() {
           ].map(({ label, count, dot }) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className={`w-2 h-2 rounded-full ${dot}`} />
-              <span className="text-xs text-gray-500">{label}</span>
-              <span className="text-xs font-semibold text-gray-700 tabular">{count}</span>
+              <span className="text-xs text-slate-500">{label}</span>
+              <span className="text-xs font-semibold text-slate-700 tabular">{count}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Top Actions */}
-      <section>
+      {/* ── Recommended Actions ── */}
+      <section className="scroll-reveal">
         <h2 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wider">Recommended Actions</h2>
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 scroll-stagger">
           {actions.map((a) => (
-            <a key={a.num} href={a.link} className={`block ${a.bg} rounded-2xl p-5 border-l-4 ${a.color} card-hover`}>
+            <a key={a.num} href={a.link} className={`scroll-reveal block ${a.bg} rounded-2xl p-5 border-l-4 ${a.color} card-hover`}>
               <div className="flex items-start gap-4">
                 <span className={`text-xs font-bold font-mono ${a.accent} opacity-60`}>{a.num}</span>
                 <div>
@@ -161,14 +229,14 @@ export default function SummaryPage() {
         </div>
       </section>
 
-      {/* Charts */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* ── Charts ── */}
+      <section className="scroll-reveal grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-slate-900">Avg Margin by Brand</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Little Joys: {brandZombieRate.find(b => b.brand === "Little Joys")?.zombieRate.toFixed(0)}% zombie rate vs Man Matters: {brandZombieRate.find(b => b.brand === "Man Matters")?.zombieRate.toFixed(0)}%</p>
+            <h3 className="text-base font-semibold text-slate-900">Avg Margin by Brand</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Little Joys: {brandZombieRate.find(b => b.brand === "Little Joys")?.zombieRate.toFixed(0)}% zombie rate vs Man Matters: {brandZombieRate.find(b => b.brand === "Man Matters")?.zombieRate.toFixed(0)}%</p>
           </div>
-          <ResponsiveContainer width="100%" height={140}>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={brandData} layout="vertical" margin={{ left: 0, right: 16 }}>
               <XAxis type="number" tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#64748B" }} width={90} axisLine={false} tickLine={false} />
@@ -182,12 +250,12 @@ export default function SummaryPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-slate-900">Avg Margin by Channel</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">D2C carries a +14.4pp premium over marketplaces</p>
+            <h3 className="text-base font-semibold text-slate-900">Avg Margin by Channel</h3>
+            <p className="text-xs text-slate-400 mt-0.5">D2C carries a +14.4pp premium over marketplaces</p>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={channelData} layout="vertical" margin={{ left: 0, right: 16 }}>
               <XAxis type="number" tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#64748B" }} width={65} axisLine={false} tickLine={false} />
@@ -202,15 +270,15 @@ export default function SummaryPage() {
         </div>
       </section>
 
-      {/* Top 5 previews */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* ── Top 5 previews ── */}
+      <section className="scroll-reveal grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900">Worst Zombies</h3>
-            <a href="/zombies" className="text-[11px] text-blue-500 hover:text-blue-600 font-medium">View all →</a>
+            <h3 className="text-base font-semibold text-slate-900">Worst Zombies</h3>
+            <a href="/zombies" className="text-xs text-blue-500 hover:text-blue-600 font-medium">View all →</a>
           </div>
           {topZombies.map((s, i) => (
-            <div key={s.sku_id} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+            <div key={s.sku_id} className="flex items-center gap-3 py-2.5 border-b border-slate-50 last:border-0">
               <span className="text-[10px] font-bold text-slate-300 w-4">{i + 1}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-slate-800">{s.sku_id}</p>
@@ -223,13 +291,13 @@ export default function SummaryPage() {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-900">Top Hidden Gems</h3>
-            <a href="/gems" className="text-[11px] text-blue-500 hover:text-blue-600 font-medium">View all →</a>
+            <h3 className="text-base font-semibold text-slate-900">Top Hidden Gems</h3>
+            <a href="/gems" className="text-xs text-blue-500 hover:text-blue-600 font-medium">View all →</a>
           </div>
           {topGems.map((s, i) => (
-            <div key={s.sku_id} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+            <div key={s.sku_id} className="flex items-center gap-3 py-2.5 border-b border-slate-50 last:border-0">
               <span className="text-[10px] font-bold text-slate-300 w-4">{i + 1}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-slate-800">{s.sku_id}</p>
