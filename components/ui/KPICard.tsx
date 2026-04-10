@@ -36,7 +36,7 @@ interface KPICardProps {
 
 export default function KPICard({ title, value, subtitle, color = "blue", icon }: KPICardProps) {
   return (
-    <div className={`${cardBgs[color]} rounded-2xl shadow-md p-4 sm:p-6 card-hover`}>
+    <div className={`${cardBgs[color]} rounded-2xl shadow-md p-4 sm:p-6 card-hover h-full`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-xs text-slate-400 mb-1.5 sm:mb-2">{title}</p>
