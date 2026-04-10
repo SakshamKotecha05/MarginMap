@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F8FAFC;
+  --background: #F5F4F0;
   --foreground: #0F172A;
   --sidebar-bg: #0F172A;
   --sidebar-text: #94A3B8;
   --sidebar-active: #3B82F6;
+  --easing-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::selection {
+  background: #0F172A;
+  color: #F5F4F0;
 }
 
 body {
@@ -45,28 +51,29 @@ body {
   background: transparent;
 }
 
-/* Smooth global transitions */
+/* Smooth global transitions — custom easing, never browser default */
 a,
 button {
-  transition: all 0.15s ease;
+  transition: all 0.2s var(--easing-smooth);
 }
 
 /* Card hover lift effect */
 .card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s var(--easing-smooth),
+              box-shadow 0.25s var(--easing-smooth);
 }
 
 .card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
 }
 
 /* Subtle gradient mesh for hero sections */
 .gradient-mesh {
   background:
-    radial-gradient(at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(at 80% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(239, 68, 68, 0.03) 0%, transparent 50%);
+    radial-gradient(at 20% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(239, 68, 68, 0.06) 0%, transparent 50%);
 }
 
 /* Glow effects for status indicators */
@@ -88,15 +95,67 @@ button {
 
 /* SKU detail panel slide-in animation */
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);   opacity: 1; }
 }
 
 .panel-slide-in {
-  animation: slideInRight 0.22s ease-out both;
+  animation: slideInRight 0.35s var(--easing-smooth) both;
+}
+
+/* Page load entrance — staggered fade-up */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s var(--easing-smooth) both;
+}
+
+.delay-0   { animation-delay: 0ms; }
+.delay-80  { animation-delay: 80ms; }
+.delay-160 { animation-delay: 160ms; }
+.delay-240 { animation-delay: 240ms; }
+.delay-320 { animation-delay: 320ms; }
+
+/* Hero word reveal — slides up from overflow:hidden parent */
+@keyframes slideUp {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
+
+.hero-word {
+  display: block;
+  animation: slideUp 0.85s var(--easing-smooth) both;
+}
+
+/* Scroll-triggered reveals — starts hidden, JS adds .in-view */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--easing-smooth),
+              transform 0.6s var(--easing-smooth);
+}
+
+.scroll-reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for action cards */
+.scroll-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.scroll-stagger > *:nth-child(2) { transition-delay: 70ms; }
+.scroll-stagger > *:nth-child(3) { transition-delay: 140ms; }
+
+/* Respect reduced motion — disable all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .hero-word,
+  .scroll-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
