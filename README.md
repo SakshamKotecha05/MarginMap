@@ -1,10 +1,10 @@
 # MarginMap: Product Portfolio Intelligence
 
-**Mosaic Wellness Fellowship Builder Challenge — Problem #3**
+**Mosaic Wellness Fellowship Builder Challenge: Problem #3**
 
 600 SKUs. 5 channels. 25 fields per product. The category head has no single view to answer: which products are losing money, and which ones deserve more investment?
 
-This dashboard builds that view. It classifies all 600 SKUs into zombies, hidden gems, gateways, and healthy products — and gives a specific recovery action per zombie, not just a flag.
+This dashboard builds that view. It classifies all 600 SKUs into zombies, hidden gems, gateways, and healthy products. Each zombie gets a specific recovery action, not just a flag.
 
 **Numerical answer: ₹15,892,978.83/month in avoidable losses**
 
@@ -27,7 +27,7 @@ No login. No loading screen. Static export on Vercel: loads in under a second.
 | **Zombie Kill List**       | 188 loss-making SKUs with a recovery path per product and a live P&L simulator: select rows, watch the savings update in real time |
 | **Hidden Gems**            | 50 underinvested SKUs ranked by gem score with revenue upside if scaled to category median volume                                  |
 | **Insights**               | 8 tabs: Arbitrage, Cost Waterfall, Anomalies, Brand & Category, Gateway Products, Pareto, Inventory Risk, Strategy                 |
-| **Explorer**               | All 600 SKUs in a searchable, filterable, sortable, paginated table — click any row for the full 25-field detail panel             |
+| **Explorer**               | All 600 SKUs in a searchable, filterable, sortable, paginated table: click any row for the full 25-field detail panel             |
 
 ---
 
@@ -41,9 +41,9 @@ Platform fees of 15–16% on Amazon, Flipkart, BigBasket, and Nykaa are the stru
 
 Rating and profit are near-uncorrelated across the portfolio (Pearson r = 0.010). Selling price (r = 0.60) and margin% (r = 0.57) drive profit. A 4.5-star product with negative margins is not a good product: it is a mispriced one.
 
-The top 20% of SKUs (120 products) generate 50.2% of revenue. Any disruption to this group — supply issues, a channel delist, a rating drop — carries 2.5x the P&L impact of an equivalent disruption in the bottom half of the portfolio.
+The top 20% of SKUs (120 products) generate 50.2% of revenue. Any disruption to this group (supply issues, a channel delist, a rating drop) carries 2.5x the P&L impact of an equivalent disruption in the bottom half of the portfolio.
 
-Hair Oil is the most efficient category: 24.4% average margin with only 5 zombies across 49 SKUs. Serum is the opposite — 19 zombies despite being the largest category by SKU count. Category health is not random. Margin structure and competitive intensity within each category explain it.
+Hair Oil is the most efficient category: 24.4% average margin with only 5 zombies across 49 SKUs. Serum is the opposite: 19 zombies despite being the largest category by SKU count. Category health is not random. Margin structure and competitive intensity within each category explain it.
 
 Man Matters has the highest average portfolio margin at 20.6%. Little Joys sits at 15.3%. The 5.3 percentage point gap comes from product mix and category exposure, not pricing strategy alone.
 
@@ -69,7 +69,7 @@ These are the findings that standard portfolio reports do not surface:
 
 **34 mislabeled "Decline" SKUs.** These carry margins above 35%. They are not declining: they are healthy performers being overlooked because of a stale lifecycle tag.
 
-**28 "Launch" SKUs already losing money.** These need action now, before a full quarter of losses compounds. The pattern across 142 launch-stage SKUs — 20% already failing — is a process problem, not just a product problem.
+**28 "Launch" SKUs already losing money.** These need action now, before a full quarter of losses compounds. The pattern across 142 launch-stage SKUs (20% already failing) is a process problem, not just a product problem.
 
 **Recovery paths, not kill flags.** Each zombie gets a specific action: "Move to D2C" (channel fix) or "Reprice +₹X" (pricing fix). A label alone is not enough to act on.
 
@@ -79,7 +79,7 @@ These are the findings that standard portfolio reports do not surface:
 
 **26 negative-margin products that customers love** (margin <0%, rating ≥4.0). Not bad products: mispriced ones.
 
-**Little Joys has the worst zombie rate: 24.3%** (51 of 210 SKUs). Man Matters: 20.7%. The rate reveals systemic portfolio health in a way that raw counts cannot — counts scale with portfolio size, rates do not.
+**Little Joys has the worst zombie rate: 24.3%** (51 of 210 SKUs). Man Matters: 20.7%. The rate reveals systemic portfolio health in a way that raw counts cannot: counts scale with portfolio size, rates do not.
 
 ---
 
@@ -145,9 +145,9 @@ Beyond the core classification, every previously unused field in the dataset now
 
 **Price ladder:** MRP distribution per sub-category shows crowded price tiers and unserved price gaps. A crowding score ranks sub-categories by how many SKUs cluster at the same price point.
 
-**Marketing ROI per SKU:** `monthly_revenue / (marketing_cost_per_unit × monthly_units)` — revenue per ₹1 of marketing spend. Shows which SKUs earn the most per rupee invested, and which do not.
+**Marketing ROI per SKU:** `monthly_revenue / (marketing_cost_per_unit × monthly_units)`: revenue per ₹1 of marketing spend. Shows which SKUs earn the most per rupee invested, and which do not.
 
-**Launch success rate:** % of launch-stage SKUs already profitable. A process metric — it measures the launch system, not just individual products.
+**Launch success rate:** % of launch-stage SKUs already profitable. A process metric: it measures the launch system, not just individual products.
 
 **`review_count` for gem validation:** Low units + many reviews = suppressed demand (real gem). Low units + few reviews = weak demand (not a gem). Without this check, the gem score overstates underinvestment.
 
@@ -185,15 +185,15 @@ Percentile scoring compares each product against all 600 SKUs on every dimension
 
 The gem score inverts monthly_units: low volume scores higher. The reasoning is that a product with strong margins and high repeat purchase rates but little volume is likely undiscovered, not naturally small.
 
-But low volume has two explanations. The product could be suppressed: narrow distribution, low marketing spend, limited channel presence. Or it could have weak demand — customers have seen it and chosen not to buy. The gem score resolves this with `review_count`. Low units + many reviews means customers know the product but the business has not pushed it. Low units + few reviews means the market has not engaged at all. Only the first pattern qualifies as a true hidden gem.
+But low volume has two explanations. The product could be suppressed: narrow distribution, low marketing spend, limited channel presence. Or it could have weak demand: customers have seen it and chosen not to buy. The gem score resolves this with `review_count`. Low units + many reviews means customers know the product but the business has not pushed it. Low units + few reviews means the market has not engaged at all. Only the first pattern qualifies as a true hidden gem.
 
 ### How recovery paths are assigned to each zombie
 
-Not every zombie needs discontinuation. The break-even analysis asks one question for each: if the platform fee were removed by shifting to D2C, would the margin turn positive? If yes, the recovery type is "Move to D2C" — the product's unit economics are viable, only the distribution cost is broken. If no, the problem runs deeper than the platform fee, and repricing is required. The dashboard shows the exact rupee increase needed to reach breakeven, not just a label.
+Not every zombie needs discontinuation. The break-even analysis asks one question for each: if the platform fee were removed by shifting to D2C, would the margin turn positive? If yes, the recovery type is "Move to D2C": the product's unit economics are viable, only the distribution cost is broken. If no, the problem runs deeper than the platform fee, and repricing is required. The dashboard shows the exact rupee increase needed to reach breakeven, not just a label.
 
 ### Cannibalization: why 15% MRP proximity
 
-Cannibalization is flagged when two SKUs from the same brand share a sub-category and channel, and their MRPs are within 15% of each other. At that proximity, a customer browsing the listing sees near-identical price options and picks one — the brand loses the other sale to itself.
+Cannibalization is flagged when two SKUs from the same brand share a sub-category and channel, and their MRPs are within 15% of each other. At that proximity, a customer browsing the listing sees near-identical price options and picks one: the brand loses the other sale to itself.
 
 Products priced further apart represent genuine price-ladder coverage: a ₹299 entry option alongside a ₹599 premium. Within 15%, the gap is too small to signal different value tiers. Customers treat them as the same product at a slightly different price.
 
@@ -212,10 +212,10 @@ This is not a kill recommendation. It is a prompt for finance: the product is wo
 | Framework  | Next.js 16 (App Router, `output: 'export'`: fully static, zero backend) |
 | Styling    | Tailwind CSS v4                                                         |
 | Charts     | Recharts                                                                |
-| Data       | 600 SKUs pre-bundled as static JSON — zero runtime API calls            |
+| Data       | 600 SKUs pre-bundled as static JSON: zero runtime API calls            |
 | Deployment | Vercel                                                                  |
 
-All classification and aggregation logic runs at build time in `lib/classify.ts` and `lib/calculations.ts`. Pages read pre-computed arrays: no recalculation at render time. The app is a static export — no server, no database, no runtime fetching.
+All classification and aggregation logic runs at build time in `lib/classify.ts` and `lib/calculations.ts`. Pages read pre-computed arrays: no recalculation at render time. The app is a static export: no server, no database, no runtime fetching.
 
 ---
 
