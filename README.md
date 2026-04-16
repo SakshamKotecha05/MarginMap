@@ -110,7 +110,7 @@ Each field is normalized to a 0–1 percentile rank across all 600 SKUs, weighte
 | repeat_purchase_rate_pct | 15%    | lower = worse  |
 | days_of_inventory        | 10%    | higher = worse |
 
-Score < 25 → zombie candidate
+Score ≥ 60 → zombie candidate
 
 ### Step 4: Gem score (percentile-weighted, 0–100)
 
