@@ -349,3 +349,23 @@ export const channelCostBreakdown = CHANNEL_ORDER.map((ch) => {
     marginPct:    avg((d) => d.margin_pct),
   };
 });
+
+// Gem revenue upside: total incremental monthly revenue if each gem scaled to its category median
+// Used in the Story page Beat 5 — the "opportunity" number symmetric to the ₹1.59 Cr loss
+const _categoryMedianRevenue = (() => {
+  const byCat = groupBy(allSKUs, "category");
+  const medians: Record<string, number> = {};
+  Object.entries(byCat).forEach(([cat, items]) => {
+    const sorted = items.map((s) => s.monthly_revenue).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    medians[cat] = sorted.length % 2 !== 0
+      ? sorted[mid]
+      : (sorted[mid - 1] + sorted[mid]) / 2;
+  });
+  return medians;
+})();
+
+export const gemRevenueUpside = gems.reduce((sum, sku) => {
+  const median = _categoryMedianRevenue[sku.category] ?? 0;
+  return sku.monthly_revenue < median ? sum + (median - sku.monthly_revenue) : sum;
+}, 0);
