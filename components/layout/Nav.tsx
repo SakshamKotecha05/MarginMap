@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const navItems = [
-  { href: "/",          label: "Summary"     },
+  { href: "/",          label: "Home"        },
+  { href: "/summary",   label: "Summary"     },
   { href: "/portfolio", label: "Portfolio"   },
   { href: "/zombies",   label: "Zombies"     },
   { href: "/gems",      label: "Gems"        },
@@ -12,10 +14,49 @@ const navItems = [
 ];
 
 export default function Nav() {
-  const pathname = usePathname();
+  const pathname  = usePathname();
+  const isStory   = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    // Non-home pages: always visible
+    if (pathname !== "/") {
+      setScrolled(true);
+      return;
+    }
+
+    // Story page: if already scrolled past threshold, show immediately
+    if (window.scrollY > 10) {
+      setScrolled(true);
+      return;
+    }
+
+    // Story page at top: hide and wait for first scroll past threshold
+    setScrolled(false);
+    const reveal = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+        window.removeEventListener("scroll", reveal);
+      }
+    };
+    window.addEventListener("scroll", reveal, { passive: true });
+    return () => window.removeEventListener("scroll", reveal);
+  }, [pathname]); // re-evaluate on every navigation
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100">
+    <header
+      className="z-40 bg-white/95 backdrop-blur-md border-b border-slate-100"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        opacity: scrolled ? 1 : 0,
+        transform: scrolled ? "translateY(0)" : "translateY(-8px)",
+        transition: "opacity 0.35s ease, transform 0.35s ease",
+        pointerEvents: scrolled ? "auto" : "none",
+      }}
+    >
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 h-14 flex items-center gap-6">
         {/* Brand */}
         <div className="flex items-center gap-2 flex-shrink-0">
