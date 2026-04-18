@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, formatNumber } from "@/lib/formatters";
 import {
   TOTAL_LOSS,
   UPSIDE,
@@ -12,9 +12,8 @@ import {
   CostWaterfall,
   ScatterPlot,
   useBleedingCounter,
+  F,
 } from "@/components/story/StoryVisuals";
-
-const F = "'Inter', ui-sans-serif, system-ui, sans-serif";
 const TOTAL = 8;
 const GAP_PX = 64;
 const STICK_PX = 50;
@@ -48,6 +47,27 @@ const TITLES = [
   "High ratings don't mean high profit.",
   "Every rupee shifted to D2C recovers 15% margin.",
   "Three moves. One playbook.",
+];
+
+const paradoxRating = PARADOX_SKU?.avg_rating.toFixed(1) ?? "4.7";
+const paradoxLoss   = PARADOX_SKU ? Math.abs(PARADOX_SKU.monthly_profit) : 40_000;
+
+const QUOTES = [
+  `600 products. ₹110 Cr in revenue. One of them is a ${paradoxRating}★ favourite losing ${formatCurrency(paradoxLoss)} every month. Popularity and profitability are not the same thing.`,
+  "Each dot is one product. Before we fix anything, we need to see everything — the full portfolio, all 600 SKUs, laid out at once.",
+  "Platform fees — 15–16% on every marketplace sale — wipe out margin. D2C earns 29.5%. Amazon earns 10.7%. Same product, same COGS, different channel.",
+  "75 products are profitable on a different channel — wrong listing, not wrong product. 99 more have 50%+ repeat rates. Kill those and you lose the customer, not just the SKU.",
+  `Strong margins. Loyal customers. Near-zero marketing spend. Fund these 50 and recover ${formatCurrency(UPSIDE)} in incremental monthly profit.`,
+  `Rating and profit have a correlation of r\u2009=\u2009${CORRELATION.toFixed(3)} — essentially zero. A 4.5★ product losing money isn't a bad product. It's a mispriced one.`,
+  "Same product. Same COGS. D2C earns 29.5% margin — Amazon earns 10.7%. That 18.8 point gap isn't a dashboard insight. It's a business strategy.",
+  "Delist 75 from losing channels. Reprice 113 underpriced SKUs. Fund the 50 hidden gems. Not from cuts — from clarity.",
+];
+
+const BEAT3_TILES = [
+  { label: "Wrong channel", value: 75, dot: "#B45309", sub: "profitable on another channel",
+    bg: "linear-gradient(135deg, rgba(180,83,9,0.13) 0%, #ffffff 100%)" },
+  { label: "Gateway SKUs",  value: 99, dot: "#9A6F00", sub: "50%+ repeat rate — protect",
+    bg: "linear-gradient(135deg, rgba(154,111,0,0.12) 0%, #ffffff 100%)" },
 ];
 
 // ── Card inner content — one case per beat ───────────────────────────────────
@@ -133,7 +153,7 @@ function CardInner({
             letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums",
             fontSize: "clamp(1.7rem, 3.8vw, 2.8rem)",
           }}>
-            ₹{new Intl.NumberFormat("en-IN").format(counter)}
+            ₹{formatNumber(counter)}
           </div>
           <p style={{
             fontFamily: F, fontSize: "10px", fontWeight: 500,
@@ -220,59 +240,33 @@ function CardInner({
     /* 04 — The Nuance */
     case 3:
       return (
-        <div style={{ ...wrap }}>
+        <div style={wrap}>
           {cardHeading}
           <DotGrid beat="twist" active={triggered} />
           <div style={{ display: "flex", gap: "0.6rem", width: "100%" }}>
-            {/* KPI-style tile — amber */}
-            <div style={{
-              flex: 1,
-              background: "linear-gradient(135deg, rgba(180,83,9,0.13) 0%, #ffffff 100%)",
-              borderRadius: "16px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.07)",
-              padding: "0.7rem 0.8rem",
-            }}>
-              <p style={{
-                fontFamily: F, fontSize: "9.5px", fontWeight: 500,
-                color: "rgba(26,26,46,0.42)", marginBottom: "0.3rem",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-              }}>Wrong channel</p>
-              <p style={{
-                fontFamily: F, fontSize: "1.55rem", fontWeight: 700,
-                color: "#0F172A", lineHeight: 1, marginBottom: "0.35rem",
-              }}>75</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#B45309", flexShrink: 0 }} />
-                <p style={{ fontFamily: F, fontSize: "9px", color: "rgba(26,26,46,0.38)", lineHeight: 1.35 }}>
-                  profitable on another channel
-                </p>
+            {BEAT3_TILES.map((t) => (
+              <div key={t.label} style={{
+                flex: 1, background: t.bg,
+                borderRadius: "16px", boxShadow: "0 2px 10px rgba(0,0,0,0.07)",
+                padding: "0.7rem 0.8rem",
+              }}>
+                <p style={{
+                  fontFamily: F, fontSize: "9.5px", fontWeight: 500,
+                  color: "rgba(26,26,46,0.42)", marginBottom: "0.3rem",
+                  textTransform: "uppercase", letterSpacing: "0.06em",
+                }}>{t.label}</p>
+                <p style={{
+                  fontFamily: F, fontSize: "1.55rem", fontWeight: 700,
+                  color: "#0F172A", lineHeight: 1, marginBottom: "0.35rem",
+                }}>{t.value}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: t.dot, flexShrink: 0 }} />
+                  <p style={{ fontFamily: F, fontSize: "9px", color: "rgba(26,26,46,0.38)", lineHeight: 1.35 }}>
+                    {t.sub}
+                  </p>
+                </div>
               </div>
-            </div>
-
-            {/* KPI-style tile — gold */}
-            <div style={{
-              flex: 1,
-              background: "linear-gradient(135deg, rgba(154,111,0,0.12) 0%, #ffffff 100%)",
-              borderRadius: "16px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.07)",
-              padding: "0.7rem 0.8rem",
-            }}>
-              <p style={{
-                fontFamily: F, fontSize: "9.5px", fontWeight: 500,
-                color: "rgba(26,26,46,0.42)", marginBottom: "0.3rem",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-              }}>Gateway SKUs</p>
-              <p style={{
-                fontFamily: F, fontSize: "1.55rem", fontWeight: 700,
-                color: "#0F172A", lineHeight: 1, marginBottom: "0.35rem",
-              }}>99</p>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#9A6F00", flexShrink: 0 }} />
-                <p style={{ fontFamily: F, fontSize: "9px", color: "rgba(26,26,46,0.38)", lineHeight: 1.35 }}>
-                  50%+ repeat rate — protect
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       );
@@ -420,28 +414,21 @@ export default function BeatsCarousel() {
   const [active, setActive]       = useState(0);
   const [triggered, setTriggered] = useState<boolean[]>(() => Array(TOTAL).fill(false));
   const [isMobile, setIsMobile]   = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const navLockRef = useRef<number | null>(null);
 
-  const activeRef     = useRef(0);          // always-current mirror for keyboard handler
+  const activeRef = useRef(0);
   useEffect(() => { activeRef.current = active; }, [active]);
 
-  const paradoxRating = PARADOX_SKU?.avg_rating.toFixed(1) ?? "4.7";
-  const paradoxLoss   = PARADOX_SKU ? Math.abs(PARADOX_SKU.monthly_profit) : 40_000;
-  const counter       = useBleedingCounter(TOTAL_LOSS, triggered[0]);
-
-  const QUOTES = [
-    `600 products. ₹110 Cr in revenue. One of them is a ${paradoxRating}★ favourite losing ${formatCurrency(paradoxLoss)} every month. Popularity and profitability are not the same thing.`,
-    "Each dot is one product. Before we fix anything, we need to see everything — the full portfolio, all 600 SKUs, laid out at once.",
-    "Platform fees — 15–16% on every marketplace sale — wipe out margin. D2C earns 29.5%. Amazon earns 10.7%. Same product, same COGS, different channel.",
-    "75 products are profitable on a different channel — wrong listing, not wrong product. 99 more have 50%+ repeat rates. Kill those and you lose the customer, not just the SKU.",
-    `Strong margins. Loyal customers. Near-zero marketing spend. Fund these 50 and recover ${formatCurrency(UPSIDE)} in incremental monthly profit.`,
-    `Rating and profit have a correlation of r\u2009=\u2009${CORRELATION.toFixed(3)} — essentially zero. A 4.5★ product losing money isn't a bad product. It's a mispriced one.`,
-    "Same product. Same COGS. D2C earns 29.5% margin — Amazon earns 10.7%. That 18.8 point gap isn't a dashboard insight. It's a business strategy.",
-    "Delist 75 from losing channels. Reprice 113 underpriced SKUs. Fund the 50 hidden gems. Not from cuts — from clarity.",
-  ];
+  const counter = useBleedingCounter(TOTAL_LOSS, triggered[0]);
 
   // ── Responsive breakpoint ────────────────────────────────────────────────
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setIsTouchDevice(width < 1024);
+    };
     check();
     window.addEventListener("resize", check, { passive: true });
     return () => window.removeEventListener("resize", check);
@@ -455,7 +442,13 @@ export default function BeatsCarousel() {
         const next = [...prev]; next[0] = true; return next;
       });
 
+    if (isTouchDevice) {
+      trigger0();
+      return;
+    }
+
     const onScroll = () => {
+      if (navLockRef.current !== null) return;
       const el = containerRef.current;
       if (!el) return;
       const { top, height } = el.getBoundingClientRect();
@@ -483,23 +476,45 @@ export default function BeatsCarousel() {
       window.removeEventListener("scroll", onScroll);
       obs.disconnect();
     };
-  }, []);
+  }, [isTouchDevice]);
 
   // ── Programmatic scroll to beat ──────────────────────────────────────────
   const scrollToBeat = useCallback((idx: number) => {
     const el = containerRef.current;
     if (!el) return;
+    if (navLockRef.current !== null) {
+      window.clearTimeout(navLockRef.current);
+    }
     const clamped    = Math.max(0, Math.min(TOTAL - 1, idx));
+    setActive(clamped);
+    setTriggered(prev => {
+      if (prev[clamped]) return prev;
+      const next = [...prev];
+      next[clamped] = true;
+      return next;
+    });
+    navLockRef.current = window.setTimeout(() => {
+      navLockRef.current = null;
+    }, 450);
+    if (isTouchDevice) return;
     const elTop      = el.getBoundingClientRect().top + window.scrollY;
     const scrollable = el.offsetHeight - window.innerHeight;
-    const targetY    = elTop + (clamped / TOTAL) * scrollable;
+    if (scrollable <= 0) return;
+    const targetY    = elTop + (clamped / Math.max(1, TOTAL - 1)) * scrollable;
     window.scrollTo({ top: targetY, behavior: "smooth" });
+  }, [isTouchDevice]);
+
+  useEffect(() => {
+    return () => {
+      if (navLockRef.current !== null) {
+        window.clearTimeout(navLockRef.current);
+      }
+    };
   }, []);
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
-  // Registered once — reads active via ref so it never needs to re-register.
-  // Re-registering on active change caused a brief window where no listener
-  // existed, silently dropping keypresses (the right-arrow bug).
+  // activeRef mirrors state so this handler registers once — re-registering
+  // on [active] caused a brief unregistered window that dropped keypresses.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
@@ -512,10 +527,10 @@ export default function BeatsCarousel() {
     };
     document.addEventListener("keydown", onKey, { capture: true });
     return () => document.removeEventListener("keydown", onKey, { capture: true });
-  }, [scrollToBeat]); // scrollToBeat is stable — this runs exactly once
+  }, [scrollToBeat]);
 
   // ── 3-card transform ─────────────────────────────────────────────────────
-  function cardTransform(i: number): React.CSSProperties {
+  const cardTransform = useCallback((i: number): React.CSSProperties => {
     const offset   = (i - active + TOTAL) % TOTAL;
     const isActive = offset === 0;
     const isLeft   = offset === TOTAL - 1;
@@ -527,7 +542,6 @@ export default function BeatsCarousel() {
       transform: "translateX(0px) translateY(0px) scale(1) rotateY(0deg)",
       transition: T,
     };
-    // On mobile, only the active card is visible
     if (isMobile) return { zIndex: 1, opacity: 0, pointerEvents: "none", transition: T };
     if (isLeft) return {
       zIndex: 2, opacity: 1, pointerEvents: "none",
@@ -540,7 +554,7 @@ export default function BeatsCarousel() {
       transition: T,
     };
     return { zIndex: 1, opacity: 0, pointerEvents: "none", transition: T };
-  }
+  }, [active, isMobile]);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -655,23 +669,76 @@ export default function BeatsCarousel() {
             <div style={{
               display: "flex", gap: "5px", alignItems: "center", marginTop: "2rem",
             }}>
-              {Array.from({ length: TOTAL }, (_, i) => (
+              {isTouchDevice && (
+                <button
+                  onClick={() => scrollToBeat(active - 1)}
+                  aria-label="Previous beat"
+                  disabled={active === 0}
+                  style={{
+                    width: "38px", height: "38px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(26,26,46,0.18)",
+                    background: "rgba(255,255,255,0.72)",
+                    color: "var(--story-text)",
+                    cursor: active === 0 ? "not-allowed" : "pointer",
+                    opacity: active === 0 ? 0.35 : 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+                  </svg>
+                </button>
+              )}
+
+              {!isTouchDevice && Array.from({ length: TOTAL }, (_, i) => (
                 <button
                   key={i}
                   onClick={() => scrollToBeat(i)}
-                  aria-label={`${LABELS[i]}`}
+                  aria-label={LABELS[i]}
                   style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    padding: "19px 12px", display: "flex",
+                    alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
                     width: i === active ? "18px" : "6px",
                     height: "6px", borderRadius: "3px",
-                    background: i === active
-                      ? "var(--story-text)"
-                      : "rgba(26,26,46,0.18)",
-                    border: "none", cursor: "pointer", padding: 0,
+                    background: i === active ? "var(--story-text)" : "rgba(26,26,46,0.18)",
                     transition: "all 0.35s cubic-bezier(.4,2,.3,1)",
+                    pointerEvents: "none",
+                  }} />
+                </button>
+              ))}
+
+              {isTouchDevice && (
+                <button
+                  onClick={() => scrollToBeat(active + 1)}
+                  aria-label="Next beat"
+                  disabled={active === TOTAL - 1}
+                  style={{
+                    width: "38px", height: "38px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(26,26,46,0.18)",
+                    background: "rgba(255,255,255,0.72)",
+                    color: "var(--story-text)",
+                    cursor: active === TOTAL - 1 ? "not-allowed" : "pointer",
+                    opacity: active === TOTAL - 1 ? 0.35 : 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     flexShrink: 0,
                   }}
-                />
-              ))}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>

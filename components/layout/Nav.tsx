@@ -15,7 +15,6 @@ const navItems = [
 
 export default function Nav() {
   const pathname  = usePathname();
-  const isStory   = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {

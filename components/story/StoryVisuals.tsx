@@ -8,6 +8,8 @@ import {
   ratingProfitCorrelation,
 } from "@/lib/calculations";
 
+export const F = "'Inter', ui-sans-serif, system-ui, sans-serif";
+
 // ─── Pre-computed constants ───────────────────────────────────────────────────
 
 export const TOTAL_LOSS  = portfolioSummary.totalMonthlyNegativeProfitLoss;
@@ -23,7 +25,7 @@ export const PARADOX_SKU = (() => {
 
 const SCATTER_POINTS = (() => {
   const sampled    = allSKUs.filter((_, i) => i % 5 === 0).slice(0, 120);
-  const maxRevenue = Math.max(...allSKUs.map((s) => Math.abs(s.monthly_profit)));
+  const maxRevenue = allSKUs.reduce((m, s) => Math.max(m, Math.abs(s.monthly_profit)), 0);
   const W = 380, H = 220;
   return sampled.map((s) => ({
     cx: 20 + ((s.avg_rating - 1) / 4) * (W - 40),
@@ -33,21 +35,24 @@ const SCATTER_POINTS = (() => {
   }));
 })();
 
-const CLUSTER_A_PTS = SCATTER_POINTS.filter((p) => p.isClusterA);
-const CLUSTER_B_PTS = SCATTER_POINTS.filter((p) => p.isClusterB);
-const BG_PTS        = SCATTER_POINTS.filter((p) => !p.isClusterA && !p.isClusterB);
+type ScatterPt = (typeof SCATTER_POINTS)[number];
+const CLUSTER_A_PTS: ScatterPt[] = [], CLUSTER_B_PTS: ScatterPt[] = [], BG_PTS: ScatterPt[] = [];
+for (const p of SCATTER_POINTS) {
+  if (p.isClusterA)      CLUSTER_A_PTS.push(p);
+  else if (p.isClusterB) CLUSTER_B_PTS.push(p);
+  else                   BG_PTS.push(p);
+}
 
 const A_MIN_CX = CLUSTER_A_PTS.length ? Math.min(...CLUSTER_A_PTS.map((p) => p.cx)) : 0;
 const A_MAX_CY = CLUSTER_A_PTS.length ? Math.max(...CLUSTER_A_PTS.map((p) => p.cy)) : 0;
 const B_MAX_CX = CLUSTER_B_PTS.length ? Math.max(...CLUSTER_B_PTS.map((p) => p.cx)) : 0;
 const B_MIN_CY = CLUSTER_B_PTS.length ? Math.min(...CLUSTER_B_PTS.map((p) => p.cy)) : 0;
 
-export const DOT_ASSIGNMENTS = Array.from({ length: 600 }, (_, i) => {
-  if (i < 188) return "zombie";
-  if (i < 263) return "channel";
-  if (i < 362) return "gateway";
-  if (i < 412) return "gem";
-  return "healthy";
+// Precomputed brand inline styles — bypasses CSS compilation for blue/purple
+const BRAND_STYLES: React.CSSProperties[] = Array.from({ length: 600 }, (_, i) => {
+  if (i < 210) return { background: "#3B82F6", boxShadow: "0 0 3px rgba(59,130,246,0.45)" };
+  if (i < 412) return { background: "#8B5CF6", boxShadow: "0 0 3px rgba(139,92,246,0.45)" };
+  return {};
 });
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -119,7 +124,7 @@ export const DotGrid = memo(function DotGrid({
   active?: boolean;
 }) {
   const getDotClass = useCallback(
-    (_: string, idx: number) => {
+    (idx: number) => {
       if (beat === "none" || beat === "appear") return "";
       if (beat === "red")   return idx < 188 ? "red" : "";
       if (beat === "twist") {
@@ -133,21 +138,8 @@ export const DotGrid = memo(function DotGrid({
         if (idx >= 263 && idx < 313) return "green";
         return "";
       }
-      // brand beat: colored by brand (Little Joys 210 / Be Bodywise 202 / Man Matters 188)
-      if (beat === "brand") {
-        return idx < 412 ? "" : "green"; // lj/bw applied via inline style below
-      }
+      if (beat === "brand") return idx >= 412 ? "green" : "";
       return "";
-    },
-    [beat]
-  );
-
-  const getBrandStyle = useCallback(
-    (idx: number): React.CSSProperties => {
-      if (beat !== "brand") return {};
-      if (idx < 210) return { background: "#3B82F6", boxShadow: "0 0 3px rgba(59,130,246,0.45)" };
-      if (idx < 412) return { background: "#8B5CF6", boxShadow: "0 0 3px rgba(139,92,246,0.45)" };
-      return {};
     },
     [beat]
   );
@@ -170,11 +162,11 @@ export const DotGrid = memo(function DotGrid({
         ["--stagger-ms" as string]: staggerMs,
       }}
     >
-      {DOT_ASSIGNMENTS.map((assignment, i) => (
+      {Array.from({ length: 600 }, (_, i) => (
         <div
           key={i}
-          className={`dot${!active || beat === "none" ? " opacity-0" : ""} ${getDotClass(assignment, i)}`}
-          style={{ ["--i" as string]: i, ...getBrandStyle(i) }}
+          className={`dot${!active || beat === "none" ? " opacity-0" : ""} ${getDotClass(i)}`}
+          style={{ ["--i" as string]: i, ...(beat === "brand" ? BRAND_STYLES[i] : undefined) }}
         />
       ))}
     </div>
@@ -255,7 +247,7 @@ export const ScatterPlot = memo(function ScatterPlot({ triggered }: { triggered:
         </text>
       )}
       {CLUSTER_B_PTS.length > 0 && (
-        <text x={B_MAX_CX - 75} y={B_MIN_CY - 6} fill="#7C3AED" fontSize={8} fontWeight="600"
+        <text x={Math.max(20, B_MAX_CX - 75)} y={B_MIN_CY - 6} fill="#7C3AED" fontSize={8} fontWeight="600"
               fontFamily="'Inter', ui-sans-serif, system-ui, sans-serif">
           3.2★ — printing money
         </text>

@@ -1,6 +1,6 @@
 "use client";
 
-const F = "'Inter', ui-sans-serif, system-ui, sans-serif";
+import { F } from "@/components/story/StoryVisuals";
 
 export default function VideoHero() {
   return (
@@ -18,7 +18,7 @@ export default function VideoHero() {
         loop
         muted
         playsInline
-        preload="none"
+        preload="metadata"
         src="/coin-video.mp4"
         style={{
           position: "absolute",
@@ -105,7 +105,7 @@ export default function VideoHero() {
           flexDirection: "column",
           alignItems: "center",
           gap: "5px",
-          color: "rgba(255,255,255,0.28)",
+          color: "rgba(255,255,255,0.5)",
           fontFamily: F,
           fontSize: "10px",
           letterSpacing: "0.22em",
