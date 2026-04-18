@@ -387,7 +387,7 @@ function CardInner({
             }}>Fund 50.</p>
           </div>
           <Link
-            href="/"
+            href="/summary"
             style={{
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "0.7rem 0.9rem",
