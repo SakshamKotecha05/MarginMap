@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -8,12 +9,26 @@
   --sidebar-text: #94A3B8;
   --sidebar-active: #3B82F6;
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Story page — light theme */
+  --story-bg:      #F7F5F0;
+  --story-text:    #1A1A2E;
+  --story-muted:   rgba(26, 26, 46, 0.45);
+  --story-divider: rgba(26, 26, 46, 0.08);
+  --story-gold:    #9A6F00;
+  --story-red:     #C0392B;
+  --story-green:   #1A7A4A;
+  --story-amber:   #B45309;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --color-portfolio-black: #050505;
+  --color-chrome-silver: #E8E8E8;
+  --font-display: 'Inter', sans-serif;
+  --font-story-body: 'Inter', sans-serif;
 }
 
 body {
@@ -154,3 +169,181 @@ button {
 .scroll-stagger > *:nth-child(3) { animation: scrollReveal 0.6s 200ms ease-out forwards; }
 .scroll-stagger > *:nth-child(4) { animation: scrollReveal 0.6s 300ms ease-out forwards; }
 .scroll-stagger > *:nth-child(5) { animation: scrollReveal 0.6s 400ms ease-out forwards; }
+
+/* ── Story page — dot grid ──────────────────────────────── */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #BDC5CF;
+  transition: background-color 0.35s ease, box-shadow 0.35s ease;
+  transition-delay: calc(var(--i) * var(--stagger-ms, 8) * 1ms);
+  flex-shrink: 0;
+}
+
+/* Color states — color and glow only, never size */
+.dot.red    { background: #E53E3E; box-shadow: 0 0 3px rgba(229,  62,  62,  0.45); }
+.dot.amber  { background: #D97706; box-shadow: 0 0 3px rgba(217, 119,   6,  0.45); }
+.dot.gold   { background: #B45309; box-shadow: 0 0 3px rgba(180,  83,   9,  0.45); }
+.dot.green  { background: #10B981; box-shadow: 0 0 3px rgba( 16, 185, 129,  0.50); }
+.dot.lj     { background: #3B82F6; box-shadow: 0 0 3px rgba( 59, 130, 246,  0.45); }
+.dot.bw     { background: #8B5CF6; box-shadow: 0 0 3px rgba(139,  92, 246,  0.45); }
+
+/* will-change scoped to parent during a recoloring beat */
+.dot-grid.recoloring .dot { will-change: background-color; }
+
+/* ── Story page — cost waterfall bars ──────────────────── */
+@keyframes barExpand {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes barPulse {
+  0%   { transform: scaleX(1) scaleY(1); }
+  50%  { transform: scaleX(1) scaleY(1.12); }
+  100% { transform: scaleX(1) scaleY(1); }
+}
+
+.cost-bar {
+  transform-origin: left;
+  animation: barExpand 0.5s ease-out forwards;
+}
+
+/* Platform fee bar: fast arrival + vertical emphasis slam */
+.cost-bar.platform {
+  animation:
+    barExpand 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    barPulse  0.25s 0.3s ease-in-out forwards;
+}
+
+/* ── Story page — fade utility ──────────────────────────── */
+.story-fade {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.story-fade.in-view { opacity: 1; }
+
+/* ── Story page — vignette overlay ─────────────────────── */
+.story-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(5,5,5,0.6) 80%, rgba(5,5,5,0.9) 100%);
+  pointer-events: none;
+}
+
+/* ── Story page — glassmorphism panel ───────────────────── */
+.glass-panel {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+  border-radius: 16px;
+}
+
+/* ── Story page — beat panel enter animation ────────────── */
+@keyframes beatFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.beat-enter {
+  animation: beatFadeUp 0.45s ease-out both;
+}
+
+/* ── Story page — scroll hint bounce ───────────────────── */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+.story-scroll-hint {
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+
+/* ── Story page — section reveal (IntersectionObserver) ── */
+.story-section {
+  transition: opacity 0.65s ease-out, transform 0.65s ease-out;
+}
+.story-section.not-in-view {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+/* ── BeatsCarousel layout ───────────────────────────────── */
+.bc-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  gap: clamp(2rem, 4vw, 4.5rem);
+}
+
+.bc-visual {
+  flex: 0 0 auto;
+  width: 46%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bc-card-wrap {
+  position: relative;
+  width: min(370px, 90%);
+  height: min(460px, 70svh);
+  perspective: 1200px;
+}
+
+.bc-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+/* Mobile — stack vertically, single card */
+@media (max-width: 767px) {
+  .bc-inner {
+    flex-direction: column;
+    padding: 1.25rem 1.25rem 1rem;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .bc-visual {
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+
+  .bc-card-wrap {
+    width: 100%;
+    height: 210px;
+    perspective: 800px;
+  }
+
+  .bc-text {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    overflow-y: auto;
+  }
+}
+
+/* ── Reduced motion — story page ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    transition: none;
+  }
+  .cost-bar,
+  .cost-bar.platform {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .story-fade {
+    opacity: 1;
+    transition: none;
+  }
+}
