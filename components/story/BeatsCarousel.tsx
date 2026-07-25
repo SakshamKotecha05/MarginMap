@@ -57,7 +57,7 @@ const QUOTES = [
   "Each dot is one product. Before we fix anything, we need to see everything — the full portfolio, all 600 SKUs, laid out at once.",
   "Platform fees — 15–16% on every marketplace sale — wipe out margin. D2C earns 29.5%. Amazon earns 10.7%. Same product, same COGS, different channel.",
   "75 products are profitable on a different channel — wrong listing, not wrong product. 99 more have 50%+ repeat rates. Kill those and you lose the customer, not just the SKU.",
-  `Strong margins. Loyal customers. Near-zero marketing spend. Fund these 50 and recover ${formatCurrency(UPSIDE)} in incremental monthly profit.`,
+  `Strong margins. Loyal customers. Near-zero marketing spend. Fund these 50 and recover ${formatCurrency(UPSIDE)} in incremental monthly revenue.`,
   `Rating and profit have a correlation of r\u2009=\u2009${CORRELATION.toFixed(3)} — essentially zero. A 4.5★ product losing money isn't a bad product. It's a mispriced one.`,
   "Same product. Same COGS. D2C earns 29.5% margin — Amazon earns 10.7%. That 18.8 point gap isn't a dashboard insight. It's a business strategy.",
   "Delist 75 from losing channels. Reprice 69 underpriced SKUs. Fund the 50 hidden gems. Not from cuts — from clarity.",
@@ -887,10 +887,12 @@ export default function BeatsCarousel() {
         <div style={{
           position: "absolute", bottom: 0, left: 0,
           height: "2px",
-          width: `${((active + 1) / TOTAL) * 100}%`,
+          width: "100%",
+          transform: `scaleX(${(active + 1) / TOTAL})`,
+          transformOrigin: "left",
           background: "var(--story-text)",
           opacity: 0.15,
-          transition: "width 0.5s ease",
+          transition: "transform 0.5s ease",
         }} />
       </div>
     </div>

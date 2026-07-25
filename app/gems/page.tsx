@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { gems } from "@/lib/data";
-import { byCategory } from "@/lib/calculations";
+import { gemRevenueUpside } from "@/lib/calculations";
 import type { ClassifiedSKU } from "@/lib/classify";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
@@ -10,14 +10,6 @@ import KPICard from "@/components/ui/KPICard";
 const sorted = [...gems].sort((a, b) => b.gem_score - a.gem_score);
 
 const avgGemMargin = gems.reduce((s, d) => s + d.margin_pct, 0) / gems.length;
-
-// Potential revenue: if each gem scaled to its category's median volume
-const potentialRevenue = gems.reduce((sum, s) => {
-  const catSKUs = Object.entries(byCategory).find(([k]) => k === s.category)?.[1];
-  const targetUnits = catSKUs ? catSKUs.monthlyRevenue / catSKUs.count / s.selling_price : s.monthly_units * 3;
-  const upside = Math.max(0, targetUnits - s.monthly_units) * s.selling_price;
-  return sum + upside;
-}, 0);
 
 function StarRating({ rating }: { rating: number }) {
   const full  = Math.floor(rating);
@@ -74,11 +66,11 @@ export default function GemsPage() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KPICard title="Hidden Gems"    value={String(gems.length)}          subtitle="underinvested SKUs"              color="green" />
         <KPICard title="Avg Gem Margin" value={formatPercent(avgGemMargin)}   subtitle="vs portfolio average"            color="green" />
-        <KPICard title="Revenue Upside" value={formatCurrency(potentialRevenue)} subtitle="if scaled to category median"  color="green" />
+        <KPICard title="Revenue Upside" value={formatCurrency(gemRevenueUpside)} subtitle="if scaled to category median"  color="green" />
       </section>
 
       {/* Insight banner */}
-      <div className="bg-emerald-500/5 rounded-2xl p-5 border-l-4 border-l-emerald-500">
+      <div className="bg-emerald-500/5 rounded-2xl p-5 ring-1 ring-emerald-100">
         <p className="text-sm font-semibold text-slate-800 mb-1">Why these are gems</p>
         <p className="text-[13px] text-slate-500 leading-relaxed">
           High margin + strong repeat purchase rates + good ratings, but low current volume.
