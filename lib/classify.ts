@@ -64,10 +64,14 @@ function buildPercentileMap(values: number[]): Map<number, number> {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
   const map = new Map<number, number>();
-  values.forEach((v) => {
-    const rank = sorted.filter((x) => x < v).length / (n - 1);
-    map.set(v, Math.min(1, Math.max(0, rank)));
-  });
+  // A value's first index in the sorted array is exactly the count of items
+  // strictly less than it, so one pass gives the same ranks a per-value
+  // filter would, without the O(n²) rescan.
+  for (let i = 0; i < n; i++) {
+    if (i === 0 || sorted[i] !== sorted[i - 1]) {
+      map.set(sorted[i], Math.min(1, Math.max(0, i / (n - 1))));
+    }
+  }
   return map;
 }
 

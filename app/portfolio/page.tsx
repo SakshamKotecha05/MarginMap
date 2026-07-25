@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ScatterChart, Scatter, XAxis, YAxis, Tooltip,
   ReferenceLine, ReferenceArea, ResponsiveContainer, Cell,
@@ -154,6 +154,11 @@ export default function PortfolioPage() {
   const [killSortDir, setKillSortDir]       = useState<"asc" | "desc">("asc");
   const [quickWinsSort, setQuickWinsSort]   = useState<QuickWinsSortKey>("spread_desc");
   const [graphExpanded, setGraphExpanded]   = useState(false);
+  // Recharts sizes itself by measuring the DOM, which does not exist during
+  // static export. Hold the charts back until mount; the wrappers keep the
+  // height reserved so nothing shifts.
+  const [mounted, setMounted]               = useState(false);
+  useEffect(() => setMounted(true), []);
   const [scaleSort, setScaleSort]         = useState<ScaleSortKey>("gem_score_desc");
   const [activeFilter, setActiveFilter]   = useState<Classification | "all">("all");
   const [selectedSKU, setSelectedSKU]     = useState<ClassifiedSKU | null>(null);
@@ -279,24 +284,22 @@ export default function PortfolioPage() {
               </button>
             ))}
           </div>
-          <div className="h-[480px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
-                <XAxis type="number" dataKey="margin_pct" name="Margin %" domain={[minMargin - 5, maxMargin + 5]} tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} label={{ value: "Margin %  →", position: "insideBottom", offset: -10, fontSize: 10, fill: "#94A3B8" }} />
-                <YAxis type="number" dataKey="monthly_units" name="Monthly Units" domain={[0, maxUnits + 100]} tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} axisLine={false} tickLine={false} label={{ value: "Units/Month  →", angle: -90, position: "insideLeft", offset: 10, fontSize: 10, fill: "#94A3B8" }} />
-                <Tooltip content={<CustomTooltip />} />
-                <ReferenceArea x1={minMargin - 5} x2={0}           y1={0}           y2={medianUnits}    fill="#EF4444" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={0}           x2={maxMargin + 5} y1={0}           y2={medianUnits}    fill="#10B981" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={minMargin - 5} x2={0}           y1={medianUnits} y2={maxUnits + 100} fill="#F59E0B" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={0}           x2={maxMargin + 5} y1={medianUnits} y2={maxUnits + 100} fill="#3B82F6" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceLine x={0}           stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="5 3" label={{ value: "Breakeven", position: "insideTopLeft",  fontSize: 9, fill: "#94A3B8" }} />
-                <ReferenceLine y={medianUnits} stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="5 3" label={{ value: "Median volume", position: "insideTopRight", fontSize: 9, fill: "#94A3B8" }} />
-                <Scatter data={filteredData} isAnimationActive={false} onClick={(data) => setSelectedSKU(data as unknown as ClassifiedSKU)} cursor="pointer">
-                  {filteredData.map((entry, i) => <Cell key={i} fill={COLOR[entry.classification]} fillOpacity={0.75} r={4} />)}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={480}>
+            <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+              <XAxis type="number" dataKey="margin_pct" name="Margin %" domain={[minMargin - 5, maxMargin + 5]} tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} label={{ value: "Margin %  →", position: "insideBottom", offset: -10, fontSize: 10, fill: "#94A3B8" }} />
+              <YAxis type="number" dataKey="monthly_units" name="Monthly Units" domain={[0, maxUnits + 100]} tick={{ fontSize: 10, fill: "#94A3B8" }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} axisLine={false} tickLine={false} label={{ value: "Units/Month  →", angle: -90, position: "insideLeft", offset: 10, fontSize: 10, fill: "#94A3B8" }} />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceArea x1={minMargin - 5} x2={0}           y1={0}           y2={medianUnits}    fill="#EF4444" fillOpacity={0.07} strokeOpacity={0} />
+              <ReferenceArea x1={0}           x2={maxMargin + 5} y1={0}           y2={medianUnits}    fill="#10B981" fillOpacity={0.07} strokeOpacity={0} />
+              <ReferenceArea x1={minMargin - 5} x2={0}           y1={medianUnits} y2={maxUnits + 100} fill="#F59E0B" fillOpacity={0.07} strokeOpacity={0} />
+              <ReferenceArea x1={0}           x2={maxMargin + 5} y1={medianUnits} y2={maxUnits + 100} fill="#3B82F6" fillOpacity={0.07} strokeOpacity={0} />
+              <ReferenceLine x={0}           stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="5 3" label={{ value: "Breakeven", position: "insideTopLeft",  fontSize: 9, fill: "#94A3B8" }} />
+              <ReferenceLine y={medianUnits} stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="5 3" label={{ value: "Median volume", position: "insideTopRight", fontSize: 9, fill: "#94A3B8" }} />
+              <Scatter data={filteredData} isAnimationActive={false} onClick={(data) => setSelectedSKU(data as unknown as ClassifiedSKU)} cursor="pointer">
+                {filteredData.map((entry, i) => <Cell key={i} fill={COLOR[entry.classification]} fillOpacity={0.75} r={4} />)}
+              </Scatter>
+            </ScatterChart>
+          </ResponsiveContainer>
           <div className="grid grid-cols-4 gap-2 mt-3">
             {[
               { label: "Kill",    color: "#EF4444", sub: "Low margin · low vol" },
@@ -659,53 +662,55 @@ export default function PortfolioPage() {
 
           {/* Chart */}
           <div className="h-[280px] sm:h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 8, right: 12, bottom: 16, left: 4 }}>
-                <XAxis
-                  type="number"
-                  dataKey="margin_pct"
-                  name="Margin %"
-                  domain={[minMargin - 5, maxMargin + 5]}
-                  tick={{ fontSize: 9, fill: "#94A3B8" }}
-                  tickFormatter={(v) => `${v}%`}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: "Margin %  →", position: "insideBottom", offset: -8, fontSize: 9, fill: "#94A3B8" }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="monthly_units"
-                  name="Monthly Units"
-                  domain={[0, maxUnits + 100]}
-                  tick={{ fontSize: 9, fill: "#94A3B8" }}
-                  tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: "Units →", angle: -90, position: "insideLeft", offset: 8, fontSize: 9, fill: "#94A3B8" }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-
-                {/* Shaded quadrant zones */}
-                <ReferenceArea x1={minMargin - 5} x2={0}           y1={0}           y2={medianUnits}    fill="#EF4444" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={0}           x2={maxMargin + 5} y1={0}           y2={medianUnits}    fill="#10B981" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={minMargin - 5} x2={0}           y1={medianUnits} y2={maxUnits + 100} fill="#F59E0B" fillOpacity={0.07} strokeOpacity={0} />
-                <ReferenceArea x1={0}           x2={maxMargin + 5} y1={medianUnits} y2={maxUnits + 100} fill="#3B82F6" fillOpacity={0.07} strokeOpacity={0} />
-
-                <ReferenceLine x={0}           stroke="#94A3B8" strokeWidth={1} strokeDasharray="4 2" />
-                <ReferenceLine y={medianUnits} stroke="#94A3B8" strokeWidth={1} strokeDasharray="4 2" />
-
-                <Scatter
-                  data={filteredData}
-                  isAnimationActive={false}
-                  onClick={(data) => setSelectedSKU(data as unknown as ClassifiedSKU)}
-                  cursor="pointer"
-                >
-                  {filteredData.map((entry, i) => (
-                    <Cell key={i} fill={COLOR[entry.classification]} fillOpacity={0.75} r={3} />
-                  ))}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 8, right: 12, bottom: 16, left: 4 }}>
+                  <XAxis
+                    type="number"
+                    dataKey="margin_pct"
+                    name="Margin %"
+                    domain={[minMargin - 5, maxMargin + 5]}
+                    tick={{ fontSize: 9, fill: "#94A3B8" }}
+                    tickFormatter={(v) => `${v}%`}
+                    axisLine={false}
+                    tickLine={false}
+                    label={{ value: "Margin %  →", position: "insideBottom", offset: -8, fontSize: 9, fill: "#94A3B8" }}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="monthly_units"
+                    name="Monthly Units"
+                    domain={[0, maxUnits + 100]}
+                    tick={{ fontSize: 9, fill: "#94A3B8" }}
+                    tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                    axisLine={false}
+                    tickLine={false}
+                    label={{ value: "Units →", angle: -90, position: "insideLeft", offset: 8, fontSize: 9, fill: "#94A3B8" }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+  
+                  {/* Shaded quadrant zones */}
+                  <ReferenceArea x1={minMargin - 5} x2={0}           y1={0}           y2={medianUnits}    fill="#EF4444" fillOpacity={0.07} strokeOpacity={0} />
+                  <ReferenceArea x1={0}           x2={maxMargin + 5} y1={0}           y2={medianUnits}    fill="#10B981" fillOpacity={0.07} strokeOpacity={0} />
+                  <ReferenceArea x1={minMargin - 5} x2={0}           y1={medianUnits} y2={maxUnits + 100} fill="#F59E0B" fillOpacity={0.07} strokeOpacity={0} />
+                  <ReferenceArea x1={0}           x2={maxMargin + 5} y1={medianUnits} y2={maxUnits + 100} fill="#3B82F6" fillOpacity={0.07} strokeOpacity={0} />
+  
+                  <ReferenceLine x={0}           stroke="#94A3B8" strokeWidth={1} strokeDasharray="4 2" />
+                  <ReferenceLine y={medianUnits} stroke="#94A3B8" strokeWidth={1} strokeDasharray="4 2" />
+  
+                  <Scatter
+                    data={filteredData}
+                    isAnimationActive={false}
+                    onClick={(data) => setSelectedSKU(data as unknown as ClassifiedSKU)}
+                    cursor="pointer"
+                  >
+                    {filteredData.map((entry, i) => (
+                      <Cell key={i} fill={COLOR[entry.classification]} fillOpacity={0.75} r={3} />
+                    ))}
+                  </Scatter>
+                </ScatterChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* 2×2 compact quadrant legend */}
