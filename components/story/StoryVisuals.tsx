@@ -81,21 +81,19 @@ export function useInView(threshold = 0.25) {
 }
 
 export function useBleedingCounter(target: number, active: boolean) {
-  const [value, setValue]   = useState(0);
+  const [value, setValue]   = useState(target); // SSG/SSR renders the real value, not 0
   const started             = useRef(false);
 
   useEffect(() => {
     if (!active || started.current) return;
     started.current = true;
 
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setValue(target);
       return;
     }
 
+    setValue(0); // client-only reset so count-up animation starts from zero
     let current = 0;
     let timerId: ReturnType<typeof setTimeout>;
     const tick = () => {

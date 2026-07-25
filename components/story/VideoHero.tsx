@@ -26,6 +26,11 @@ export default function VideoHero() {
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          // ponytail: 9% zoom anchored top-left crops the "Veo" watermark
+          // (source px ~1797-1895 x 1009-1053) off the bottom-right edge.
+          // Re-encode the mp4 cropped if the zoom ever costs too much framing.
+          transform: "scale(1.09)",
+          transformOrigin: "top left",
         }}
       />
 

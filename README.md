@@ -10,7 +10,7 @@ This dashboard builds that view. It classifies all 600 SKUs into zombies, hidden
 
 ---
 
-## Live Demo
+## Live Dashboard
 
 **https://margin-map-tau.vercel.app**
 
@@ -20,20 +20,21 @@ No login. No loading screen. Static export on Vercel: loads in under a second.
 
 ## What It Does
 
-| Page                       | What's there                                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Executive Summary**      | Portfolio KPIs, composition bar, brand health, channel comparison, launch funnel stats                                             |
-| **Portfolio Intelligence** | Scatter chart of all 600 SKUs by margin vs. volume, Kill List, Quick Wins, Scale Up, and Health tabs                               |
-| **Zombie Kill List**       | 188 loss-making SKUs with a recovery path per product and a live P&L simulator: select rows, watch the savings update in real time |
-| **Hidden Gems**            | 50 underinvested SKUs ranked by gem score with revenue upside if scaled to category median volume                                  |
-| **Insights**               | 8 tabs: Arbitrage, Cost Waterfall, Anomalies, Brand & Category, Gateway Products, Pareto, Inventory Risk, Strategy                 |
-| **Explorer**               | All 600 SKUs in a searchable, filterable, sortable, paginated table: click any row for the full 25-field detail panel             |
+| Page                       | Route        | What's there                                                                                                                        |
+| -------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Story**                  | `/`          | Cinematic landing: video hero and scroll-triggered beats that frame the problem before any data table                               |
+| **Executive Summary**      | `/summary`   | Portfolio KPIs, composition bar, brand health, channel comparison, top zombies and gems preview, three-action call-out              |
+| **Portfolio Intelligence** | `/portfolio` | Scatter chart of all 600 SKUs by margin vs. volume, Kill List, Quick Wins, Scale Up, and Health tabs                                |
+| **Zombie Kill List**       | `/zombies`   | 188 zombie SKUs with a recovery path per product and a live P&L simulator: select rows, watch the savings update in real time  |
+| **Hidden Gems**            | `/gems`      | 50 underinvested SKUs ranked by gem score with revenue upside if scaled to category median volume                                   |
+| **Insights**               | `/insights`  | 8 tabs: Arbitrage, Cost Waterfall, Anomalies, Brand & Category, Gateway Products, Pareto, Inventory Risk, Strategy                  |
+| **Explorer**               | `/explorer`  | All 600 SKUs in a searchable, filterable, sortable, paginated table: click any row for the full 25-field detail panel              |
 
 ---
 
 ## Key Findings
 
-188 zombie SKUs lose ₹1.59 Cr/month (₹19.07 Cr/year). 31% of the portfolio is a drag on the business.
+Loss-making SKUs drain ₹1.59 Cr/month (₹19.07 Cr/year). The 188 zombies account for ₹1.36 Cr/month of that; bleeding gateway products make up the rest. 31% of the portfolio is a drag on the business.
 
 Platform fees of 15–16% on Amazon, Flipkart, BigBasket, and Nykaa are the structural cause: not COGS, which barely moves across channels (39–44%). The D2C channel carries a 14.4 percentage point margin premium over the marketplace average as a direct result.
 
@@ -43,11 +44,11 @@ Rating and profit are near-uncorrelated across the portfolio (Pearson r = 0.010)
 
 The top 20% of SKUs (120 products) generate 50.2% of revenue. Any disruption to this group (supply issues, a channel delist, a rating drop) carries 2.5x the P&L impact of an equivalent disruption in the bottom half of the portfolio.
 
-Hair Oil is the most efficient category: 24.4% average margin with only 5 zombies across 49 SKUs. Serum is the opposite: 19 zombies despite being the largest category by SKU count. Category health is not random. Margin structure and competitive intensity within each category explain it.
+Hair Oil is the most efficient category: 24.4% average margin, the highest anywhere, and only 5 of its 49 SKUs sell at a negative margin, the fewest of any category. Serum is the opposite: 19 SKUs below zero margin and 23 zombies overall, despite being the largest category by SKU count. Category health is not random. Margin structure and competitive intensity within each category explain it.
 
 Man Matters has the highest average portfolio margin at 20.6%. Little Joys sits at 15.3%. The 5.3 percentage point gap comes from product mix and category exposure, not pricing strategy alone.
 
-93 SKUs have high return rates alongside ratings of 4.0 or above. High return combined with a good rating points to sizing or fit problems, not product defects. High return combined with a low rating (below 2.5) points to quality issues. These two groups need different fixes: the first needs better product information and size guides, the second needs reformulation or discontinuation.
+68 SKUs have return rates above 20% alongside ratings of 4.0 or above. High return combined with a good rating points to sizing or fit problems, not product defects. High return combined with a low rating (below 2.5) points to quality issues. These two groups need different fixes: the first needs better product information and size guides, the second needs reformulation or discontinuation.
 
 Of the 188 zombies, a subset are fixable by channel shift alone. Removing the platform fee by moving these products to D2C would bring their margins positive without touching the product or price. The rest have a deeper pricing problem: total costs exceed selling price even before the platform fee is counted. The dashboard separates both groups so the operations team and category team can work in parallel.
 
@@ -79,7 +80,7 @@ These are the findings that standard portfolio reports do not surface:
 
 **26 negative-margin products that customers love** (margin <0%, rating ≥4.0). Not bad products: mispriced ones.
 
-**Little Joys has the worst zombie rate: 24.3%** (51 of 210 SKUs). Man Matters: 20.7%. The rate reveals systemic portfolio health in a way that raw counts cannot: counts scale with portfolio size, rates do not.
+**Little Joys has the worst zombie rate: 31.9%** (67 of 210 SKUs). Be Bodywise: 31.7%. Man Matters: 30.3%. The rate reveals systemic portfolio health in a way that raw counts cannot: counts scale with portfolio size, rates do not.
 
 ---
 
@@ -225,3 +226,38 @@ All classification and aggregation logic runs at build time in `lib/classify.ts`
 - `useMemo` on all filtered and sorted data: filters update without recalculating the full dataset on every keystroke
 - `dynamic(() => import(...), { ssr: false })` on chart-heavy pages: reduces the initial bundle
 - All aggregations computed once at build time: page speed is a product of architecture, not runtime optimization
+
+---
+
+## Repository Layout
+
+```
+MarginMap/
+  app/
+    page.tsx              Story landing (video hero + scroll beats)
+    summary/page.tsx      Executive KPI dashboard
+    portfolio/page.tsx    600-SKU scatter quadrant + tabs
+    zombies/page.tsx      Kill list + live P&L simulator
+    gems/page.tsx         Hidden gems invest list
+    insights/page.tsx     8-tab deep insights
+    explorer/page.tsx     Full searchable 600-row table
+    layout.tsx            Fixed top nav + page frame
+    globals.css           Animations, tabular numerics, scroll utilities
+  components/
+    layout/Nav.tsx                    Top navigation bar
+    story/VideoHero.tsx               Landing video hero
+    story/BeatsCarousel.tsx           Scroll-triggered story beats
+    ui/KPICard.tsx                    Reusable metric card
+    ui/SKUDetailPanel.tsx             Slide-in 25-field detail panel
+    ui/ClassificationBadge.tsx        Semantic classification pill
+  lib/
+    classify.ts           4-step classification engine
+    calculations.ts       All portfolio aggregations (run at build time)
+    data.ts               Imports JSON, runs classifyAll(), exports arrays
+    formatters.ts         Indian-locale currency and percentage formatting
+  data/
+    skus.json             600 SKUs, 25 fields, pre-bundled from API
+```
+
+---
+

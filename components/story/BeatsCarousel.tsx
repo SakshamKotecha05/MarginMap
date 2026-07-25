@@ -70,6 +70,195 @@ const BEAT3_TILES = [
     bg: "linear-gradient(135deg, rgba(154,111,0,0.12) 0%, #ffffff 100%)" },
 ];
 
+const STATS: { value: string; label: string }[] = [
+  { value: "₹1.59 Cr",  label: "lost every month to loss-making SKUs" },
+  { value: "600 SKUs",  label: "across 3 brands · 5 channels · ₹110 Cr revenue" },
+  { value: "16%",       label: "platform fee — the silent margin killer" },
+  { value: "174 SKUs",  label: "saveable via channel shift or repricing" },
+  { value: "50 SKUs",   label: "high-margin · high-loyalty · underfunded" },
+  { value: `r\u2009=\u2009${CORRELATION.toFixed(3)}`, label: "rating-to-profit correlation · near zero" },
+  { value: "+18.8pp",   label: "D2C margin premium over Amazon · same product" },
+  { value: "₹19 Cr",   label: "annual losses recoverable with 3 clear actions" },
+];
+
+// ── Chapter Rail ──────────────────────────────────────────────────────────────
+
+function ChapterRail({ active, onSelect, isTouchDevice }: { active: number; onSelect: (i: number) => void; isTouchDevice: boolean }) {
+  if (isTouchDevice) return null;
+  return (
+    <aside style={{
+      width: "175px", flexShrink: 0,
+      display: "flex", flexDirection: "column", justifyContent: "center",
+      padding: "0 0 0 20px", gap: "2px",
+      borderRight: "1px solid var(--story-divider)",
+    }}>
+      {LABELS.map((label, i) => {
+        const isActive = i === active;
+        const isPast   = i < active;
+        return (
+          <button
+            key={i}
+            onClick={() => onSelect(i)}
+            style={{
+              display: "flex", alignItems: "center", gap: "9px",
+              padding: "7px 10px 7px 0", background: "none", border: "none",
+              cursor: "pointer", textAlign: "left", borderRadius: "8px",
+            }}
+          >
+            <div style={{
+              width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: isActive ? "var(--story-text)" : isPast ? "rgba(26,26,46,0.14)" : "transparent",
+              border: isActive || isPast ? "none" : "1.5px solid rgba(26,26,46,0.18)",
+              transition: "all 0.2s ease",
+            }}>
+              {isPast ? (
+                <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="rgba(26,26,46,0.5)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <span style={{ fontFamily: F, fontSize: "8px", fontWeight: 700, color: isActive ? "white" : "rgba(26,26,46,0.35)" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              )}
+            </div>
+            <span style={{
+              fontFamily: F, fontSize: "11px",
+              fontWeight: isActive ? 600 : 400,
+              color: isActive ? "var(--story-text)" : "rgba(26,26,46,0.38)",
+              lineHeight: 1.3, transition: "all 0.2s ease",
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              {label}
+            </span>
+          </button>
+        );
+      })}
+    </aside>
+  );
+}
+
+// ── Stat Callout ──────────────────────────────────────────────────────────────
+
+function StatCallout({ stat }: { stat: { value: string; label: string } }) {
+  return (
+    <motion.div
+      key={stat.value}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      style={{
+        display: "inline-flex", flexDirection: "column", alignSelf: "flex-start",
+        background: "rgba(26,26,46,0.04)",
+        border: "1px solid var(--story-divider)",
+        borderRadius: "12px",
+        padding: "10px 16px",
+        marginBottom: "1.1rem",
+      }}
+    >
+      <span style={{ fontFamily: F, fontSize: "clamp(1.1rem,2vw,1.55rem)", fontWeight: 800, color: "var(--story-text)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+        {stat.value}
+      </span>
+      <span style={{ fontFamily: F, fontSize: "10px", color: "var(--story-muted)", marginTop: "3px", letterSpacing: "0.02em" }}>
+        {stat.label}
+      </span>
+    </motion.div>
+  );
+}
+
+// ── Channel Bars ──────────────────────────────────────────────────────────────
+
+function ChannelBars({ triggered }: { triggered: boolean }) {
+  const channels = [
+    { name: "D2C",       margin: 29.5, color: "#10B981", isTop: true  },
+    { name: "Nykaa",     margin: 22.5, color: "#60A5FA"               },
+    { name: "BigBasket", margin: 16.1, color: "#94A3B8"               },
+    { name: "Amazon",    margin: 10.7, color: "#EF4444"               },
+    { name: "Flipkart",  margin: 10.6, color: "#F87171"               },
+  ];
+  return (
+    <div style={{ width: "100%", maxWidth: "280px" }}>
+      {channels.map((ch, i) => (
+        <div key={ch.name} style={{ marginBottom: ch.isTop ? "14px" : "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", alignItems: "baseline" }}>
+            <span style={{ fontFamily: F, fontSize: ch.isTop ? "12px" : "11px", fontWeight: ch.isTop ? 700 : 500, color: ch.isTop ? "#10B981" : "rgba(255,255,255,0.5)" }}>{ch.name}</span>
+            <span style={{ fontFamily: F, fontSize: ch.isTop ? "13px" : "11px", fontWeight: 700, color: ch.isTop ? "#10B981" : "rgba(255,255,255,0.45)", fontVariantNumeric: "tabular-nums" }}>{ch.margin}%</span>
+          </div>
+          <div style={{ height: ch.isTop ? "16px" : "10px", borderRadius: "5px", background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: "5px", background: ch.color,
+              width: triggered ? `${(ch.margin / 31) * 100}%` : "0%",
+              transition: `width 0.75s cubic-bezier(0.25,1,0.5,1) ${i * 130}ms`,
+              boxShadow: ch.isTop ? "0 0 14px rgba(16,185,129,0.45)" : "none",
+            }} />
+          </div>
+        </div>
+      ))}
+      <p style={{ fontFamily: F, fontSize: "9px", color: "rgba(255,255,255,0.18)", letterSpacing: "0.12em", textAlign: "center", marginTop: "10px", textTransform: "uppercase" }}>
+        same product · same cogs · 18.8pp difference
+      </p>
+    </div>
+  );
+}
+
+// ── Verdict Playbook ──────────────────────────────────────────────────────────
+
+function VerdictPlaybook({ triggered }: { triggered: boolean }) {
+  const actions = [
+    { num: "75",  verb: "Delist",  color: "#F59E0B", dim: "rgba(245,158,11,0.18)",   bar: "rgba(245,158,11,0.55)",   sub: "SKUs from losing channels", impact: "₹1.59 Cr", impactSub: "saved / mo" },
+    { num: "113", verb: "Reprice", color: "#F87171", dim: "rgba(248,113,113,0.18)", bar: "rgba(248,113,113,0.55)", sub: "underpriced SKUs",          impact: "+8pp",     impactSub: "avg margin" },
+    { num: "50",  verb: "Fund",    color: "#34D399", dim: "rgba(52,211,153,0.18)",  bar: "rgba(52,211,153,0.55)",  sub: "hidden gems",               impact: "2×",       impactSub: "growth"     },
+  ];
+  const barWidths = ["75%", "88%", "55%"];
+  return (
+    <div style={{ width: "100%", maxWidth: "285px" }}>
+      {actions.map((a, i) => (
+        <div key={a.verb} style={{
+          display: "grid", gridTemplateColumns: "auto 1fr auto", alignItems: "center",
+          borderRadius: "14px", overflow: "hidden", marginBottom: "8px",
+          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+          opacity: triggered ? 1 : 0,
+          transform: triggered ? "scale(1) translateY(0)" : "scale(0.95) translateY(10px)",
+          transition: `opacity 0.5s ease ${i * 150}ms, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${i * 150}ms`,
+        }}>
+          <div style={{ background: a.dim, borderRight: "1px solid rgba(255,255,255,0.06)", padding: "14px", display: "flex", alignItems: "center", justifyContent: "center", minWidth: "62px" }}>
+            <span style={{ fontFamily: F, fontWeight: 900, lineHeight: 0.9, color: a.color, fontSize: "2rem", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.04em" }}>{a.num}</span>
+          </div>
+          <div style={{ padding: "12px" }}>
+            <p style={{ fontFamily: F, fontWeight: 800, fontSize: "13.5px", color: a.color, lineHeight: 1.1 }}>{a.verb}</p>
+            <p style={{ fontFamily: F, fontSize: "10px", color: "rgba(255,255,255,0.38)", marginTop: "3px" }}>{a.sub}</p>
+            <div style={{ marginTop: "8px", height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: "2px", background: a.bar, width: triggered ? barWidths[i] : "0%", transition: `width 0.8s cubic-bezier(0.25,1,0.5,1) ${300 + i * 150}ms` }} />
+            </div>
+          </div>
+          <div style={{ padding: "12px 14px", borderLeft: "1px solid rgba(255,255,255,0.06)", textAlign: "center", minWidth: "58px" }}>
+            <p style={{ fontFamily: F, fontWeight: 800, fontSize: "1.05rem", color: a.color, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{a.impact}</p>
+            <p style={{ fontFamily: F, fontSize: "9px", color: "rgba(255,255,255,0.3)", marginTop: "3px", letterSpacing: "0.04em" }}>{a.impactSub}</p>
+          </div>
+        </div>
+      ))}
+      <Link
+        href="/summary"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+          marginTop: "8px", width: "100%", padding: "11px 0",
+          borderRadius: "12px", background: "var(--story-bg)",
+          textDecoration: "none",
+          opacity: triggered ? 1 : 0,
+          transform: triggered ? "translateY(0)" : "translateY(8px)",
+          transition: "opacity 0.5s ease 500ms, transform 0.5s ease 500ms",
+        }}
+      >
+        <span style={{ fontFamily: F, fontSize: "12px", fontWeight: 700, color: "var(--story-text)" }}>Open Dashboard</span>
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ color: "var(--story-text)" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+        </svg>
+      </Link>
+    </div>
+  );
+}
+
 // ── Card inner content — one case per beat ───────────────────────────────────
 
 function CardInner({
@@ -160,6 +349,10 @@ function CardInner({
             letterSpacing: "0.12em", textTransform: "uppercase",
             color: "rgba(255,255,255,0.2)",
           }}>every month</p>
+          <p style={{
+            fontFamily: F, fontSize: "9.5px", fontWeight: 500,
+            color: "rgba(255,100,100,0.5)", letterSpacing: "0.1em", textTransform: "uppercase",
+          }}>that&apos;s ₹521 per second</p>
         </div>
       );
 
@@ -313,92 +506,19 @@ function CardInner({
     /* 07 — The Strategy */
     case 6:
       return (
-        <div style={{ ...wrap, gap: 0 }}>
+        <div style={{ ...wrap, gap: "0.5rem" }}>
           {cardHeading}
-          <div style={{
-            position: "absolute", inset: 0, borderRadius: "24px",
-            background: "radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.07) 0%, transparent 60%)",
-            pointerEvents: "none",
-          }} />
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
-            <div style={{ textAlign: "center" }}>
-              <p style={{
-                fontFamily: F, fontWeight: 800, color: "#10B981", lineHeight: 1,
-                fontSize: "clamp(1.8rem, 3.5vw, 2.7rem)",
-              }}>29.5%</p>
-              <p style={{
-                fontFamily: F, fontSize: "9.5px", fontWeight: 600,
-                letterSpacing: "0.22em", textTransform: "uppercase",
-                color: "rgba(255,255,255,0.32)", marginTop: "5px",
-              }}>D2C</p>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-              <div style={{ height: "1px", width: "16px", background: "rgba(255,255,255,0.12)" }} />
-              <p style={{ fontFamily: F, fontSize: "10px", color: "rgba(255,255,255,0.2)", fontWeight: 500 }}>vs</p>
-              <div style={{ height: "1px", width: "16px", background: "rgba(255,255,255,0.12)" }} />
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <p style={{
-                fontFamily: F, fontWeight: 800, color: "#EF4444", lineHeight: 1,
-                fontSize: "clamp(1.8rem, 3.5vw, 2.7rem)",
-              }}>10.7%</p>
-              <p style={{
-                fontFamily: F, fontSize: "9.5px", fontWeight: 600,
-                letterSpacing: "0.22em", textTransform: "uppercase",
-                color: "rgba(255,255,255,0.32)", marginTop: "5px",
-              }}>Amazon</p>
-            </div>
-          </div>
-          <p style={{
-            fontFamily: F, fontSize: "11px", fontWeight: 500,
-            color: "rgba(255,255,255,0.18)", letterSpacing: "0.1em", textAlign: "center",
-          }}>same product · same COGS</p>
+          <p style={{ fontFamily: F, fontSize: "9px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.22)", marginBottom: "2px" }}>avg margin by channel</p>
+          <ChannelBars triggered={triggered} />
         </div>
       );
 
     /* 08 — The Verdict */
     case 7:
       return (
-        <div style={{ ...wrap, gap: "0.3rem" }}>
+        <div style={{ ...wrap, gap: "0.4rem" }}>
           {cardHeading}
-          <div style={{
-            position: "absolute", inset: 0, borderRadius: "24px",
-            background: "radial-gradient(ellipse at center, rgba(247,245,240,0.025) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }} />
-          <div style={{ lineHeight: 1.1, textAlign: "center", marginBottom: "1.5rem" }}>
-            <p style={{
-              fontFamily: F, fontWeight: 800, color: "#F59E0B", marginBottom: "0.2rem",
-              fontSize: "clamp(1.4rem, 3vw, 2.1rem)",
-            }}>Delist 75.</p>
-            <p style={{
-              fontFamily: F, fontWeight: 800, color: "#EF4444", marginBottom: "0.2rem",
-              fontSize: "clamp(1.4rem, 3vw, 2.1rem)",
-            }}>Reprice 113.</p>
-            <p style={{
-              fontFamily: F, fontWeight: 800, color: "#10B981",
-              fontSize: "clamp(1.4rem, 3vw, 2.1rem)",
-            }}>Fund 50.</p>
-          </div>
-          <Link
-            href="/summary"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              padding: "0.7rem 0.9rem",
-              background: "linear-gradient(135deg, #FEF3C7 0%, #FFFEF8 100%)",
-              borderRadius: "16px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.18)",
-              color: "#0F172A",
-              fontFamily: F, fontSize: "12px", fontWeight: 600,
-              textDecoration: "none", letterSpacing: "0.02em",
-              transition: "box-shadow 0.2s ease",
-            }}
-          >
-            Explore the Dashboard
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#0F172A" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-            </svg>
-          </Link>
+          <VerdictPlaybook triggered={triggered} />
         </div>
       );
 
@@ -565,10 +685,14 @@ export default function BeatsCarousel() {
           height: "100svh",
           background: "var(--story-bg)",
           overflow: "hidden",
+          display: "flex",
         }}
       >
+        {/* ── Chapter Rail ──────────────────────────────────────── */}
+        <ChapterRail active={active} onSelect={scrollToBeat} isTouchDevice={isTouchDevice} />
+
         {/* ── Outer grid ────────────────────────────────────────── */}
-        <div className="bc-inner">
+        <div className="bc-inner" style={{ flex: 1 }}>
 
           {/* ── LEFT: Card stack ────────────────────────── */}
           <div className="bc-visual">
@@ -636,6 +760,11 @@ export default function BeatsCarousel() {
               >
                 {TITLES[active]}
               </motion.h2>
+            </AnimatePresence>
+
+            {/* Stat callout */}
+            <AnimatePresence mode="wait">
+              <StatCallout key={`stat-${active}`} stat={STATS[active]} />
             </AnimatePresence>
 
             {/* Quote — word-by-word blur reveal */}
@@ -714,6 +843,15 @@ export default function BeatsCarousel() {
                   }} />
                 </button>
               ))}
+
+              {!isTouchDevice && (
+                <span style={{
+                  fontFamily: F, fontSize: "11px", fontWeight: 600,
+                  color: "rgba(26,26,46,0.22)", letterSpacing: "0.08em", marginLeft: "4px",
+                }}>
+                  {String(active + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
+                </span>
+              )}
 
               {isTouchDevice && (
                 <button

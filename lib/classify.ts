@@ -1,5 +1,29 @@
 export type Classification = "zombie" | "gem" | "gateway" | "healthy";
 
+export interface WeightEntry {
+  field: string;
+  label: string;
+  weight: number;
+  direction: "higher-is-worse" | "lower-is-worse" | "higher-is-better" | "lower-is-better";
+}
+
+export const ZOMBIE_WEIGHTS: WeightEntry[] = [
+  { field: "monthly_profit",          label: "Monthly Profit",      weight: 0.25, direction: "lower-is-worse"  },
+  { field: "monthly_units",           label: "Monthly Units",       weight: 0.20, direction: "lower-is-worse"  },
+  { field: "avg_rating",              label: "Avg Rating",          weight: 0.15, direction: "lower-is-worse"  },
+  { field: "return_rate_pct",         label: "Return Rate",         weight: 0.15, direction: "higher-is-worse" },
+  { field: "repeat_purchase_rate_pct",label: "Repeat Rate",         weight: 0.15, direction: "lower-is-worse"  },
+  { field: "days_of_inventory",       label: "Days of Inventory",   weight: 0.10, direction: "higher-is-worse" },
+];
+
+export const GEM_WEIGHTS: WeightEntry[] = [
+  { field: "margin_pct",              label: "Margin %",            weight: 0.25, direction: "higher-is-better" },
+  { field: "repeat_purchase_rate_pct",label: "Repeat Rate",         weight: 0.25, direction: "higher-is-better" },
+  { field: "avg_rating",              label: "Avg Rating",          weight: 0.20, direction: "higher-is-better" },
+  { field: "monthly_units",           label: "Monthly Units",       weight: 0.20, direction: "lower-is-better"  },
+  { field: "marketing_cost_per_unit", label: "Marketing Cost/Unit", weight: 0.10, direction: "lower-is-better"  },
+];
+
 export interface SKU {
   sku_id: string;
   brand: string;

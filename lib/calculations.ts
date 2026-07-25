@@ -350,6 +350,120 @@ export const channelCostBreakdown = CHANNEL_ORDER.map((ch) => {
   };
 });
 
+// ─── A6: Deadstock trapped cash ─────────────────────────────────────────────
+// Cash tied up in zombie inventory: days_of_inventory × daily_units × cogs
+export const deadstockTrappedCash = zombies.reduce((sum, sku) =>
+  sum + sku.days_of_inventory * (sku.monthly_units / 30) * sku.cogs, 0
+);
+
+// ─── A7: Cannibalization revenue at risk ─────────────────────────────────────
+// If the lowest-margin variant in each cannibalization group were delisted,
+// this is the monthly revenue that would be lost before any consolidation benefit
+export const cannibalizationRevenueAtRisk = cannibalizationGroups.reduce((sum, group) => {
+  const lowestMargin = group.items.reduce((worst, item) =>
+    item.margin_pct < worst.margin_pct ? item : worst
+  );
+  return sum + lowestMargin.monthly_revenue;
+}, 0);
+
+// ─── A4: Methodology sensitivity — re-threshold without re-scoring ────────────
+// Given a new zombie score threshold, returns classification counts using the
+// already-computed zombie_score / gem_score on each SKU. Gateway and hard-zombie
+// (margin_pct < 0) rules always apply regardless of threshold.
+export function recomputeClassificationCounts(zombieThreshold: number) {
+  let zombie = 0, gem = 0, gateway = 0, healthy = 0;
+  for (const sku of allSKUs) {
+    if (sku.classification === "gateway") { gateway++; continue; }
+    if (sku.margin_pct < 0)              { zombie++;  continue; }
+    if (sku.zombie_score >= zombieThreshold) zombie++;
+    else if (sku.gem_score >= 65)            gem++;
+    else                                     healthy++;
+  }
+  return { zombie, gem, gateway, healthy };
+}
+
+// ─── A2: Channel Migration Simulator — data layer ────────────────────────────
+
+export type SimulatorInput  = { amazonShift: number; flipkartShift: number; bigBasketShift: number; nykaaShift: number };
+export type SimulatorOutput = {
+  baselineMonthlyProfit:  number;
+  projectedMonthlyProfit: number;
+  annualDelta:            number;
+  zombiesFixed:           number;
+  channelMixBefore: { channel: string; revenue: number }[];
+  channelMixAfter:  { channel: string; revenue: number }[];
+};
+
+// Platform fee % by channel (from channelCostBreakdown, keyed to raw data channel names)
+const _platformFeeByChannel: Record<string, number> = Object.fromEntries(
+  channelCostBreakdown.map((c) => [
+    c.channel === "D2C" ? "D2C Website" : c.channel,
+    c.platformPct,
+  ])
+);
+
+export function simulateMigration(input: SimulatorInput): SimulatorOutput {
+  const shiftFraction: Record<string, number> = {
+    "Amazon":    input.amazonShift    / 100,
+    "Flipkart":  input.flipkartShift  / 100,
+    "BigBasket": input.bigBasketShift / 100,
+    "Nykaa":     input.nykaaShift     / 100,
+  };
+
+  let additionalProfit  = 0;
+  let d2cRevenueGained  = 0;
+  const channelMixBefore: SimulatorOutput["channelMixBefore"] = [];
+  const channelMixAfter:  SimulatorOutput["channelMixAfter"]  = [];
+
+  for (const [ch, shift] of Object.entries(shiftFraction)) {
+    const rev        = byChannel[ch]?.monthlyRevenue ?? 0;
+    const feePct     = (_platformFeeByChannel[ch] ?? 0) / 100;
+    const shifted    = rev * shift;
+    additionalProfit += shifted * feePct;
+    d2cRevenueGained += shifted;
+    channelMixBefore.push({ channel: ch, revenue: rev });
+    channelMixAfter.push({ channel: ch, revenue: rev * (1 - shift) });
+  }
+
+  const d2cRev = byChannel["D2C Website"]?.monthlyRevenue ?? 0;
+  channelMixBefore.push({ channel: "D2C", revenue: d2cRev });
+  channelMixAfter.push({ channel: "D2C", revenue: d2cRev + d2cRevenueGained });
+
+  const zombiesFixed = zombieBreakeven.filter((z) => {
+    const s = shiftFraction[z.channel];
+    return s && s > 0 && z.recoveryType === "channel";
+  }).length;
+
+  return {
+    baselineMonthlyProfit:  portfolioSummary.totalMonthlyProfit,
+    projectedMonthlyProfit: portfolioSummary.totalMonthlyProfit + additionalProfit,
+    annualDelta:            additionalProfit * 12,
+    zombiesFixed,
+    channelMixBefore,
+    channelMixAfter,
+  };
+}
+
+// ─── A5: Zombie cohort histogram by months_listed ─────────────────────────────
+export const zombieCohortData = (() => {
+  const buckets = [
+    { label: "<3 mo",   min: 0,  max: 3  },
+    { label: "3–6 mo",  min: 3,  max: 6  },
+    { label: "6–12 mo", min: 6,  max: 12 },
+    { label: "12–24 mo",min: 12, max: 24 },
+    { label: "24 mo+",  min: 24, max: Infinity },
+  ];
+  return buckets.map((b) => ({
+    label:        b.label,
+    count:        zombies.filter((z) => z.months_listed >= b.min && z.months_listed < b.max).length,
+    monthlyLoss:  Math.abs(
+      zombies
+        .filter((z) => z.months_listed >= b.min && z.months_listed < b.max)
+        .reduce((s, z) => s + Math.min(z.monthly_profit, 0), 0)
+    ),
+  }));
+})();
+
 // Gem revenue upside: total incremental monthly revenue if each gem scaled to its category median
 // Used in the Story page Beat 5 — the "opportunity" number symmetric to the ₹1.59 Cr loss
 const _categoryMedianRevenue = (() => {

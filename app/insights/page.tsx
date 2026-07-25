@@ -21,6 +21,9 @@ import {
   avgROIByClassification,
   rationalizationCandidates,
   rationalizationSummary,
+  cannibalizationRevenueAtRisk,
+  deadstockTrappedCash,
+  zombieCohortData,
 } from "@/lib/calculations";
 import { gateways } from "@/lib/data";
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/formatters";
@@ -585,10 +588,12 @@ function AnomalyGroup({
 }
 
 const ANOMALY_SUBNAV = [
-  { id: "highMarginBadRating", label: "High Margin, Bad Rating", badge: anomalies.highMarginBadRating.length },
-  { id: "negMarginGoodRating", label: "Neg Margin, Good Rating", badge: anomalies.negMarginGoodRating.length },
-  { id: "declineMislabeled",   label: "Mislabeled Decline",      badge: anomalies.declineMislabeled.length },
-  { id: "earlyDeathSignals",   label: "Early Death Signals",     badge: anomalies.earlyDeathSignals.length },
+  { id: "highMarginBadRating",   label: "High Margin, Bad Rating",   badge: anomalies.highMarginBadRating.length },
+  { id: "negMarginGoodRating",   label: "Neg Margin, Good Rating",   badge: anomalies.negMarginGoodRating.length },
+  { id: "declineMislabeled",     label: "Mislabeled Decline",        badge: anomalies.declineMislabeled.length },
+  { id: "earlyDeathSignals",     label: "Early Death Signals",       badge: anomalies.earlyDeathSignals.length },
+  { id: "highReturnGoodRating",  label: "High Return + Good Rating", badge: returnRatingAnomalies.highReturnGoodRating.length },
+  { id: "lowReturnBadRating",    label: "Low Return + Bad Rating",   badge: returnRatingAnomalies.lowReturnBadRating.length },
 ] as const;
 
 type AnomalySubId = (typeof ANOMALY_SUBNAV)[number]["id"];
@@ -681,6 +686,56 @@ function AnomaliesTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
             { label: "Loss/mo", right: true, value: (s) => <span className="font-bold text-red-500">{formatCurrency(Math.abs(s.monthly_profit))}</span> },
           ]}
         />
+      )}
+
+      {activeSub === "highReturnGoodRating" && (
+        <>
+          <InsightBanner
+            color="amber"
+            title="Customers love these products — but keep returning them"
+            body="Return rate >20% with rating ≥4.0★ signals a fit or sizing problem, not a quality problem. The fix is product information (better size guides, clearer use cases), not reformulation."
+          />
+          <AnomalyGroup
+            title="High Return Rate Despite Great Rating"
+            subtitle="return_rate_pct > 20% AND avg_rating ≥ 4.0 — likely sizing or fit mismatch"
+            color="amber"
+            skus={returnRatingAnomalies.highReturnGoodRating}
+            onSelect={onSelect}
+            cols={[
+              { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+              { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+              { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
+              { label: "Return%", right: true, value: (s) => <span className="font-bold text-amber-600">{formatPercent(s.return_rate_pct)}</span> },
+              { label: "Rating", right: true, value: (s) => <span className="font-bold text-emerald-600">★ {s.avg_rating.toFixed(1)}</span> },
+              { label: "Margin%", right: true, value: (s) => <span className={`font-bold tabular ${s.margin_pct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPercent(s.margin_pct)}</span> },
+            ]}
+          />
+        </>
+      )}
+
+      {activeSub === "lowReturnBadRating" && (
+        <>
+          <InsightBanner
+            color="blue"
+            title="Customers keep these products — but they're not happy about it"
+            body="Return rate <5% with rating <2.5★ means customers keep the product (possibly consumables or non-returnable) but dislike it. The problem is hidden from returns data. These need quality review — low return rate is not a health signal here."
+          />
+          <AnomalyGroup
+            title="Low Return Rate Despite Bad Rating"
+            subtitle="return_rate_pct < 5% AND avg_rating < 2.5 — customers keep but dislike (consumables, non-returnable)"
+            color="blue"
+            skus={returnRatingAnomalies.lowReturnBadRating}
+            onSelect={onSelect}
+            cols={[
+              { label: "SKU", value: (s) => <span className="font-semibold text-slate-800">{s.sku_id}</span> },
+              { label: "Brand", value: (s) => <span className="text-slate-500">{s.brand}</span> },
+              { label: "Category", value: (s) => <span className="text-slate-500">{s.category}</span> },
+              { label: "Return%", right: true, value: (s) => <span className="font-bold text-emerald-600">{formatPercent(s.return_rate_pct)}</span> },
+              { label: "Rating", right: true, value: (s) => <span className="font-bold text-red-500">★ {s.avg_rating.toFixed(1)}</span> },
+              { label: "Units/mo", right: true, value: (s) => <span className="tabular text-slate-500">{formatNumber(s.monthly_units)}</span> },
+            ]}
+          />
+        </>
       )}
     </div>
   );
@@ -1076,6 +1131,7 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
         <KPICard title="Deadstock SKUs"    value={String(deadstockRisk.length)}                  subtitle=">90 days inventory, <100 units/month"   color="red" />
         <KPICard title="Trapped Cash (est.)" value={formatCurrency(trappedCash)}                  subtitle="COGS sitting in slow-moving inventory"  color="red" />
         <KPICard title="Max Days of Stock" value={`${deadstockRisk[0]?.days_of_inventory ?? 0}d`} subtitle="worst-case inventory overhang"           color="amber" />
+        <KPICard title="Zombie Trapped Cash" value={formatCurrency(deadstockTrappedCash)} subtitle="COGS locked in unsold zombie inventory" color="red" />
       </div>
 
       <InsightBanner
@@ -1143,7 +1199,7 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
 
 // ─── Tab: Strategy ─────────────────────────────────────────────────────────
 
-type StrategySub = "launch" | "brand" | "cannibalization" | "roi" | "rationalize" | "price";
+type StrategySub = "launch" | "brand" | "cannibalization" | "roi" | "rationalize" | "price" | "cohort";
 
 const STRATEGY_SUBNAV: Array<{ id: StrategySub; label: string; badge?: number }> = [
   { id: "launch",          label: "Launch Funnel",    badge: launchSuccessRate.failing },
@@ -1152,6 +1208,7 @@ const STRATEGY_SUBNAV: Array<{ id: StrategySub; label: string; badge?: number }>
   { id: "roi",             label: "Mktg ROI"                                               },
   { id: "rationalize",     label: "Rationalization",  badge: rationalizationSummary.count  },
   { id: "price",           label: "Price Ladder",     badge: priceLadder.length            },
+  { id: "cohort",          label: "Zombie Cohorts"                                         },
 ];
 
 function StrategyTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
@@ -1429,6 +1486,59 @@ function StrategyTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
                       <td className={`px-3 py-2.5 text-right tabular font-bold ${r.avgMargin >= 20 ? "text-emerald-600" : r.avgMargin >= 10 ? "text-amber-600" : "text-red-500"}`}>
                         {formatPercent(r.avgMargin)}
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Zombie Cohorts ── */}
+      {sub === "cohort" && (
+        <div className="space-y-4">
+          <InsightBanner
+            color="red"
+            title="Most zombies are established products — not new failures"
+            body={`The largest zombie cohort by loss is ${zombieCohortData.reduce((a, b) => b.monthlyLoss > a.monthlyLoss ? b : a).label}. Long-listed zombies are structural problems: enough time has passed to know the unit economics won't improve without a deliberate intervention.`}
+          />
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <p className="text-sm font-semibold text-slate-800">Zombie SKUs by Time Listed</p>
+              <p className="text-xs text-slate-400 mt-0.5">count and monthly loss by months_listed bucket</p>
+            </div>
+            <div className="p-5">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={zombieCohortData} barCategoryGap="28%">
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="count" orientation="left"  tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={30} />
+                  <YAxis yAxisId="loss"  orientation="right" tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={70}
+                    tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
+                  <Tooltip
+                    formatter={(val, name) => {
+                      const v = Number(val);
+                      return name === "count"
+                        ? [`${v} SKUs`, "Zombie Count"]
+                        : [`₹${(v / 100000).toFixed(1)}L/mo`, "Monthly Loss"];
+                    }}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                  />
+                  <Bar yAxisId="count" dataKey="count"       fill="#EF4444" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar yAxisId="loss"  dataKey="monthlyLoss" fill="#FCA5A5" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="border-t border-slate-100 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-slate-100"><Th>Bucket</Th><Th right>Zombies</Th><Th right>Monthly Loss</Th><Th right>Avg Loss/SKU</Th></tr></thead>
+                <tbody>
+                  {zombieCohortData.map((b) => (
+                    <tr key={b.label} className="border-b border-slate-50">
+                      <td className="px-3 py-2.5 font-medium text-slate-700">{b.label}</td>
+                      <td className="px-3 py-2.5 text-right tabular font-semibold text-slate-800">{b.count}</td>
+                      <td className="px-3 py-2.5 text-right tabular font-bold text-red-500">{b.monthlyLoss > 0 ? formatCurrency(b.monthlyLoss) : "—"}</td>
+                      <td className="px-3 py-2.5 text-right tabular text-slate-500">{b.count > 0 ? formatCurrency(b.monthlyLoss / b.count) : "—"}</td>
                     </tr>
                   ))}
                 </tbody>

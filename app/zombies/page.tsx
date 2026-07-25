@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { zombies } from "@/lib/data";
-import { zombieBreakeven } from "@/lib/calculations";
+import { zombieBreakeven, channelFixCount, pricingFixCount } from "@/lib/calculations";
 import type { ClassifiedSKU } from "@/lib/classify";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import SKUDetailPanel from "@/components/ui/SKUDetailPanel";
@@ -71,6 +71,14 @@ export default function ZombiesPage() {
     });
   }, [brandFilter, channelFilter, sortField, sortDir]);
 
+  const applyPreset = (preset: "top30" | "channel" | "pricing" | "clear") => {
+    if (preset === "clear") { setSelected(new Set()); return; }
+    const ids = preset === "top30"
+      ? [...zombieBreakeven].sort((a, b) => a.monthly_profit - b.monthly_profit).slice(0, 30).map((z) => z.sku_id)
+      : zombieBreakeven.filter((z) => z.recoveryType === (preset === "channel" ? "channel" : "pricing")).map((z) => z.sku_id);
+    setSelected(new Set(ids));
+  };
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -123,6 +131,30 @@ export default function ZombiesPage() {
         <KPICard title="Monthly Losses" value={formatCurrency(zombieLoss)}    subtitle="from negative-profit SKUs"     color="red" />
         <KPICard title="Annual Losses"  value={formatCurrency(zombieLoss*12)} subtitle="projected at current rate"     color="red" />
       </section>
+
+      {/* Footnote: zombie-only vs total portfolio losses */}
+      <p className="text-[11px] text-slate-400 -mt-1">
+        ₹1.36 Cr/mo above = zombie-only losses. Total portfolio losses (₹15.89M/mo) include bleeding gateways and other negative-margin SKUs — see the Pareto tab in Insights.
+      </p>
+
+      {/* Preset selectors */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">Quick select:</span>
+        {([
+          { id: "top30",   label: "Top 30 by loss" },
+          { id: "channel", label: `${channelFixCount} channel-fixable` },
+          { id: "pricing", label: `${pricingFixCount} pricing-fixable` },
+          { id: "clear",   label: "Clear" },
+        ] as const).map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => applyPreset(id)}
+            className="text-xs font-medium rounded-full px-3 py-1.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
