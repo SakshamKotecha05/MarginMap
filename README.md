@@ -123,7 +123,7 @@ Score ≥ 60 → zombie candidate
 | monthly_units            | 20%    | lower = more underinvested |
 | marketing_cost_per_unit  | 10%    | lower = more undiscovered  |
 
-Score > 65 AND not zombie → hidden gem
+Score ≥ 65 AND not zombie → hidden gem
 
 ### Results
 

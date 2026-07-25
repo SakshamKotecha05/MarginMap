@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import KPICard from "@/components/ui/KPICard";
-import { portfolioSummary, byChannel, launchSuccessRate, brandZombieRate, ratingProfitCorrelation, deadstockTrappedCash, channelFixCount } from "@/lib/calculations";
+import { portfolioSummary, byChannel, launchSuccessRate, brandZombieRate, ratingProfitCorrelation, channelFixCount } from "@/lib/calculations";
 import { zombies, gems } from "@/lib/data";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 
@@ -26,19 +26,19 @@ const channelData = Object.entries(byChannel)
 
 const actions = [
   {
-    num: "01", color: "border-l-red-500", accent: "text-red-500", bg: "bg-red-500/5",
+    num: "01", border: "border-red-500/20", chip: "bg-red-500/10 text-red-600", bg: "bg-red-500/5",
     title: "Delist 188 zombie products",
     desc: "Save ₹1.36 Cr/month in zombie losses. Start with the 20 highest-loss SKUs on Amazon & Flipkart.",
     link: "/zombies",
   },
   {
-    num: "02", color: "border-l-emerald-500", accent: "text-emerald-500", bg: "bg-emerald-500/5",
+    num: "02", border: "border-emerald-500/20", chip: "bg-emerald-500/10 text-emerald-600", bg: "bg-emerald-500/5",
     title: "Scale 50 hidden gems",
     desc: "Strong margins + loyal customers — reallocate zombie marketing budget here.",
     link: "/gems",
   },
   {
-    num: "03", color: "border-l-amber-500", accent: "text-amber-500", bg: "bg-amber-500/5",
+    num: "03", border: "border-amber-500/20", chip: "bg-amber-500/10 text-amber-600", bg: "bg-amber-500/5",
     title: "Fix channel mix for 75 products",
     desc: "Same product, wildly different margins. Shift marketplace volume to D2C (+14.4pp margin).",
     link: "/explorer",
@@ -221,9 +221,9 @@ export default function SummaryPage() {
         <h2 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wider">Recommended Actions</h2>
         <div className="space-y-2.5 scroll-stagger">
           {actions.map((a) => (
-            <a key={a.num} href={a.link} className={`scroll-reveal block ${a.bg} rounded-2xl p-5 border-l-4 ${a.color} card-hover`}>
+            <a key={a.num} href={a.link} className={`scroll-reveal block ${a.bg} rounded-2xl p-5 border ${a.border} card-hover`}>
               <div className="flex items-start gap-4">
-                <span className={`text-xs font-bold font-mono ${a.accent} opacity-60`}>{a.num}</span>
+                <span className={`w-[26px] h-[26px] rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-extrabold font-mono ${a.chip}`}>{a.num}</span>
                 <div>
                   <p className="font-semibold text-slate-900 text-sm">{a.title}</p>
                   <p className="text-[13px] text-slate-500 mt-0.5 leading-relaxed">{a.desc}</p>

@@ -41,7 +41,7 @@ const LABELS = [
 const TITLES = [
   "Your best-reviewed product is losing money.",
   "600 SKUs. 5 channels. 3 brands.",
-  "188 of them are bleeding. The culprit is the same every time.",
+  "188 of them are zombies. The culprit is the same every time.",
   "But don't kill them all.",
   "50 products hiding in plain sight.",
   "High ratings don't mean high profit.",
@@ -60,7 +60,7 @@ const QUOTES = [
   `Strong margins. Loyal customers. Near-zero marketing spend. Fund these 50 and recover ${formatCurrency(UPSIDE)} in incremental monthly profit.`,
   `Rating and profit have a correlation of r\u2009=\u2009${CORRELATION.toFixed(3)} — essentially zero. A 4.5★ product losing money isn't a bad product. It's a mispriced one.`,
   "Same product. Same COGS. D2C earns 29.5% margin — Amazon earns 10.7%. That 18.8 point gap isn't a dashboard insight. It's a business strategy.",
-  "Delist 75 from losing channels. Reprice 113 underpriced SKUs. Fund the 50 hidden gems. Not from cuts — from clarity.",
+  "Delist 75 from losing channels. Reprice 69 underpriced SKUs. Fund the 50 hidden gems. Not from cuts — from clarity.",
 ];
 
 const BEAT3_TILES = [
@@ -74,7 +74,7 @@ const STATS: { value: string; label: string }[] = [
   { value: "₹1.59 Cr",  label: "lost every month to loss-making SKUs" },
   { value: "600 SKUs",  label: "across 3 brands · 5 channels · ₹110 Cr revenue" },
   { value: "16%",       label: "platform fee — the silent margin killer" },
-  { value: "174 SKUs",  label: "saveable via channel shift or repricing" },
+  { value: "188 SKUs",  label: "saveable via channel shift or repricing" },
   { value: "50 SKUs",   label: "high-margin · high-loyalty · underfunded" },
   { value: `r\u2009=\u2009${CORRELATION.toFixed(3)}`, label: "rating-to-profit correlation · near zero" },
   { value: "+18.8pp",   label: "D2C margin premium over Amazon · same product" },
@@ -188,8 +188,10 @@ function ChannelBars({ triggered }: { triggered: boolean }) {
           <div style={{ height: ch.isTop ? "16px" : "10px", borderRadius: "5px", background: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
             <div style={{
               height: "100%", borderRadius: "5px", background: ch.color,
-              width: triggered ? `${(ch.margin / 31) * 100}%` : "0%",
-              transition: `width 0.75s cubic-bezier(0.25,1,0.5,1) ${i * 130}ms`,
+              width: `${(ch.margin / 31) * 100}%`,
+              transform: triggered ? "scaleX(1)" : "scaleX(0)",
+              transformOrigin: "left",
+              transition: `transform 0.75s cubic-bezier(0.25,1,0.5,1) ${i * 130}ms`,
               boxShadow: ch.isTop ? "0 0 14px rgba(16,185,129,0.45)" : "none",
             }} />
           </div>
@@ -206,9 +208,9 @@ function ChannelBars({ triggered }: { triggered: boolean }) {
 
 function VerdictPlaybook({ triggered }: { triggered: boolean }) {
   const actions = [
-    { num: "75",  verb: "Delist",  color: "#F59E0B", dim: "rgba(245,158,11,0.18)",   bar: "rgba(245,158,11,0.55)",   sub: "SKUs from losing channels", impact: "₹1.59 Cr", impactSub: "saved / mo" },
-    { num: "113", verb: "Reprice", color: "#F87171", dim: "rgba(248,113,113,0.18)", bar: "rgba(248,113,113,0.55)", sub: "underpriced SKUs",          impact: "+8pp",     impactSub: "avg margin" },
-    { num: "50",  verb: "Fund",    color: "#34D399", dim: "rgba(52,211,153,0.18)",  bar: "rgba(52,211,153,0.55)",  sub: "hidden gems",               impact: "2×",       impactSub: "growth"     },
+    { num: "75",  verb: "Delist",  color: "#F59E0B", dim: "rgba(245,158,11,0.18)",   bar: "rgba(245,158,11,0.55)",   sub: "SKUs from losing channels", impact: "₹1.49 Cr", impactSub: "saved / mo" },
+    { num: "69",  verb: "Reprice", color: "#F87171", dim: "rgba(248,113,113,0.18)", bar: "rgba(248,113,113,0.55)", sub: "underpriced SKUs",          impact: "+₹83",     impactSub: "median hike" },
+    { num: "50",  verb: "Fund",    color: "#34D399", dim: "rgba(52,211,153,0.18)",  bar: "rgba(52,211,153,0.55)",  sub: "hidden gems",               impact: "₹2.8 Cr",  impactSub: "upside / mo" },
   ];
   const barWidths = ["75%", "88%", "55%"];
   return (
@@ -220,7 +222,7 @@ function VerdictPlaybook({ triggered }: { triggered: boolean }) {
           background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
           opacity: triggered ? 1 : 0,
           transform: triggered ? "scale(1) translateY(0)" : "scale(0.95) translateY(10px)",
-          transition: `opacity 0.5s ease ${i * 150}ms, transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${i * 150}ms`,
+          transition: `opacity 0.5s ease ${i * 150}ms, transform 0.55s cubic-bezier(0.22,1,0.36,1) ${i * 150}ms`,
         }}>
           <div style={{ background: a.dim, borderRight: "1px solid rgba(255,255,255,0.06)", padding: "14px", display: "flex", alignItems: "center", justifyContent: "center", minWidth: "62px" }}>
             <span style={{ fontFamily: F, fontWeight: 900, lineHeight: 0.9, color: a.color, fontSize: "2rem", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.04em" }}>{a.num}</span>
@@ -229,7 +231,7 @@ function VerdictPlaybook({ triggered }: { triggered: boolean }) {
             <p style={{ fontFamily: F, fontWeight: 800, fontSize: "13.5px", color: a.color, lineHeight: 1.1 }}>{a.verb}</p>
             <p style={{ fontFamily: F, fontSize: "10px", color: "rgba(255,255,255,0.38)", marginTop: "3px" }}>{a.sub}</p>
             <div style={{ marginTop: "8px", height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: "2px", background: a.bar, width: triggered ? barWidths[i] : "0%", transition: `width 0.8s cubic-bezier(0.25,1,0.5,1) ${300 + i * 150}ms` }} />
+              <div style={{ height: "100%", borderRadius: "2px", background: a.bar, width: barWidths[i], transform: triggered ? "scaleX(1)" : "scaleX(0)", transformOrigin: "left", transition: `transform 0.8s cubic-bezier(0.25,1,0.5,1) ${300 + i * 150}ms` }} />
             </div>
           </div>
           <div style={{ padding: "12px 14px", borderLeft: "1px solid rgba(255,255,255,0.06)", textAlign: "center", minWidth: "58px" }}>
@@ -352,7 +354,7 @@ function CardInner({
           <p style={{
             fontFamily: F, fontSize: "9.5px", fontWeight: 500,
             color: "rgba(255,100,100,0.5)", letterSpacing: "0.1em", textTransform: "uppercase",
-          }}>that&apos;s ₹521 per second</p>
+          }}>that&apos;s ₹5.3 lakh a day</p>
         </div>
       );
 
@@ -655,7 +657,7 @@ export default function BeatsCarousel() {
     const isActive = offset === 0;
     const isLeft   = offset === TOTAL - 1;
     const isRight  = offset === 1;
-    const T        = "all 0.8s cubic-bezier(.4,2,.3,1)";
+    const T        = "all 0.8s cubic-bezier(0.22,1,0.36,1)";
 
     if (isActive) return {
       zIndex: 3, opacity: 1, pointerEvents: "auto",
@@ -838,7 +840,7 @@ export default function BeatsCarousel() {
                     width: i === active ? "18px" : "6px",
                     height: "6px", borderRadius: "3px",
                     background: i === active ? "var(--story-text)" : "rgba(26,26,46,0.18)",
-                    transition: "all 0.35s cubic-bezier(.4,2,.3,1)",
+                    transition: "all 0.35s cubic-bezier(0.22,1,0.36,1)",
                     pointerEvents: "none",
                   }} />
                 </button>

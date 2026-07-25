@@ -14,33 +14,36 @@ const navItems = [
 ];
 
 export default function Nav() {
-  const pathname  = usePathname();
-  const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const isHome   = pathname === "/";
+  const [revealed, setRevealed] = useState(false);
+  const [prevPath, setPrevPath] = useState(pathname);
+
+  // Reset the reveal on navigation (render-time reset, no flash of stale state)
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
+    setRevealed(false);
+  }
+
+  // Non-home pages: always visible. Story page: hidden until first scroll past threshold.
+  const scrolled = !isHome || revealed;
 
   useEffect(() => {
-    // Non-home pages: always visible
-    if (pathname !== "/") {
-      setScrolled(true);
-      return;
-    }
-
-    // Story page: if already scrolled past threshold, show immediately
-    if (window.scrollY > 10) {
-      setScrolled(true);
-      return;
-    }
-
-    // Story page at top: hide and wait for first scroll past threshold
-    setScrolled(false);
+    if (!isHome) return;
     const reveal = () => {
       if (window.scrollY > 10) {
-        setScrolled(true);
+        setRevealed(true);
         window.removeEventListener("scroll", reveal);
       }
     };
+    // Reload mid-page lands past the threshold with no scroll event coming
+    const raf = requestAnimationFrame(reveal);
     window.addEventListener("scroll", reveal, { passive: true });
-    return () => window.removeEventListener("scroll", reveal);
-  }, [pathname]); // re-evaluate on every navigation
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", reveal);
+    };
+  }, [isHome]);
 
   return (
     <header

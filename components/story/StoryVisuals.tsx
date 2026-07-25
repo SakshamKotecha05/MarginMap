@@ -88,12 +88,9 @@ export function useBleedingCounter(target: number, active: boolean) {
     if (!active || started.current) return;
     started.current = true;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(target);
-      return;
-    }
+    // Reduced motion: value already holds target from useState, skip the count-up
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    setValue(0); // client-only reset so count-up animation starts from zero
     let current = 0;
     let timerId: ReturnType<typeof setTimeout>;
     const tick = () => {
@@ -103,8 +100,9 @@ export function useBleedingCounter(target: number, active: boolean) {
       setValue(Math.floor(current));
       timerId = setTimeout(tick, Math.random() * 28 + 8);
     };
-    tick();
-    return () => clearTimeout(timerId);
+    // Start inside rAF: resets to zero and counts up without a synchronous setState
+    const raf = requestAnimationFrame(() => { setValue(0); tick(); });
+    return () => { cancelAnimationFrame(raf); clearTimeout(timerId); };
   }, [active, target]);
 
   return value;

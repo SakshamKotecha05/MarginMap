@@ -21,7 +21,6 @@ import {
   avgROIByClassification,
   rationalizationCandidates,
   rationalizationSummary,
-  cannibalizationRevenueAtRisk,
   deadstockTrappedCash,
   zombieCohortData,
 } from "@/lib/calculations";
@@ -60,10 +59,6 @@ const paretoChart = paretoData
 
 const TOP20_RANK  = Math.round(paretoData.length * 0.2);  // 120
 const TOP20_PCT   = Math.round((paretoData[TOP20_RANK - 1]?.cumulativePct ?? 50.2) * 10) / 10;
-const BOT50_PCT   = Math.round(
-  ((paretoData[paretoData.length - 1].cumulativePct -
-    (paretoData[Math.round(paretoData.length * 0.5) - 1]?.cumulativePct ?? 85)) / 1) * 10
-) / 10;
 
 const totalAnomalies =
   anomalies.highMarginBadRating.length +
@@ -147,13 +142,13 @@ function InsightBanner({
   body: string;
 }) {
   const cls = {
-    blue:    "border-l-blue-500 bg-blue-500/5",
-    red:     "border-l-red-500 bg-red-500/5",
-    emerald: "border-l-emerald-500 bg-emerald-500/5",
-    amber:   "border-l-amber-500 bg-amber-500/5",
+    blue:    "border-blue-500/20 bg-blue-500/5",
+    red:     "border-red-500/20 bg-red-500/5",
+    emerald: "border-emerald-500/20 bg-emerald-500/5",
+    amber:   "border-amber-500/20 bg-amber-500/5",
   }[color];
   return (
-    <div className={`rounded-2xl p-5 border-l-4 ${cls}`}>
+    <div className={`rounded-2xl p-5 border ${cls}`}>
       <p className="text-sm font-semibold text-slate-800 mb-1">{title}</p>
       <p className="text-[13px] text-slate-500 leading-relaxed">{body}</p>
     </div>
@@ -545,14 +540,13 @@ function AnomalyGroup({
   onSelect: (s: ClassifiedSKU) => void;
   cols: { label: string; value: (s: ClassifiedSKU) => React.ReactNode; right?: boolean }[];
 }) {
-  const borderCls = { red: "border-l-red-500", emerald: "border-l-emerald-500", amber: "border-l-amber-500", blue: "border-l-blue-500" }[color];
-  const countCls  = { red: "text-red-600", emerald: "text-emerald-600", amber: "text-amber-600", blue: "text-blue-600" }[color];
+  const countCls = { red: "bg-red-500/10 text-red-600", emerald: "bg-emerald-500/10 text-emerald-600", amber: "bg-amber-500/10 text-amber-600", blue: "bg-blue-500/10 text-blue-600" }[color];
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div className={`px-5 py-4 border-b border-slate-100 border-l-4 ${borderCls}`}>
+      <div className="px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <span className={`text-2xl font-bold tabular ${countCls}`}>{skus.length}</span>
+          <span className={`px-2.5 py-1 rounded-lg text-2xl font-bold tabular ${countCls}`}>{skus.length}</span>
           <div>
             <p className="text-sm font-semibold text-slate-800">{title}</p>
             <p className="text-[11px] text-slate-400">{subtitle}</p>
@@ -915,7 +909,7 @@ function BrandCategoryTab() {
                         r.stage === "Launch"  ? "bg-blue-50 text-blue-600" :
                         r.stage === "Growth"  ? "bg-emerald-50 text-emerald-600" :
                         r.stage === "Mature"  ? "bg-amber-50 text-amber-600" :
-                        "bg-slate-100 text-slate-500"
+                        "bg-slate-100 text-slate-700"
                       }`}>
                         {r.stage}
                       </span>
@@ -1182,7 +1176,7 @@ function InventoryTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
                       s.classification === "zombie"  ? "bg-red-50 text-red-600" :
                       s.classification === "gem"     ? "bg-emerald-50 text-emerald-600" :
                       s.classification === "gateway" ? "bg-amber-50 text-amber-600" :
-                      "bg-slate-100 text-slate-500"
+                      "bg-slate-100 text-slate-700"
                     }`}>
                       {s.classification}
                     </span>
@@ -1437,7 +1431,7 @@ function StrategyTab({ onSelect }: { onSelect: (s: ClassifiedSKU) => void }) {
                       <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.brand}</td>
                       <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">{s.channel}</td>
                       <td className="px-3 py-2.5">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${s.classification === "zombie" ? "bg-red-50 text-red-600" : s.classification === "gem" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${s.classification === "zombie" ? "bg-red-50 text-red-600" : s.classification === "gem" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
                           {s.classification}
                         </span>
                       </td>

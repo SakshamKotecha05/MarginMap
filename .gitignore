@@ -43,3 +43,9 @@ next-env.d.ts
 
 .vercel
 .gstack/
+
+# local working notes and AI assistant config
+WEBDESIGN.md
+docs/
+AGENTS.md
+CLAUDE.md
